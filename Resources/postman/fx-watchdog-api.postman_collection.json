@@ -6,144 +6,258 @@
 	},
 	"item": [
 		{
-			"name": "1. Admin - Create User",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"username\": \"opsuser\",\n  \"password\": \"temporary_password\",\n  \"role\": \"Ops User\"\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/api/users",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"users"
-					]
-				},
-				"description": "Creates a new user with a temporary password."
-			},
-			"response": []
-		},
-		{
-			"name": "2. User - Login",
-			"event": [
+			"name": "Auth",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});\r",
-							"\r",
-							"const response = pm.response.json();\r",
-							"pm.collectionVariables.set(\"authToken\", response.token);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"username\": \"opsuser\",\n  \"password\": \"temporary_password\"\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/api/auth/login",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"auth",
-						"login"
-					]
-				},
-				"description": "Logs in a user and returns a JWT."
-			},
-			"response": []
-		},
-		{
-			"name": "3. User - Change Password",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"value": "application/json"
-					},
-					{
-						"key": "x-auth-token",
-						"value": "{{authToken}}"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"newPassword\": \"a_strong_password\"\n}"
-				},
-				"url": {
-					"raw": "{{base_url}}/api/auth/change-password",
-					"host": [
-						"{{base_url}}"
-					],
-					"path": [
-						"api",
-						"auth",
-						"change-password"
-					]
-				},
-				"description": "Changes the user's password."
-			},
-			"response": []
-		},
-		{
-			"name": "4. Ops User - Upload Image (Protected)",
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "x-auth-token",
-						"value": "{{authToken}}"
-					}
-				],
-				"body": {
-					"mode": "formdata",
-					"formdata": [
+					"name": "1. Login",
+					"event": [
 						{
-							"key": "image",
-							"type": "file",
-							"src": []
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"const response = pm.response.json();\r",
+									"pm.collectionVariables.set(\"authToken\", response.token);\r",
+									"pm.collectionVariables.set(\"isTemporaryPassword\", response.isTemporaryPassword);"
+								],
+								"type": "text/javascript"
+							}
 						}
-					]
-				},
-				"url": {
-					"raw": "{{base_url}}/api/uploads",
-					"host": [
-						"{{base_url}}"
 					],
-					"path": [
-						"api",
-						"uploads"
-					]
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"SuperAdmin\",\n  \"password\": \"Password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Logs in a user and returns a JWT. Automatically sets authToken and isTemporaryPassword collection variables."
+					},
+					"response": []
 				},
-				"description": "Uploads an image to be processed."
-			},
-			"response": []
+				{
+					"name": "2. Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newPassword\": \"a_strong_password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/change-password",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"change-password"
+							]
+						},
+						"description": "Changes the user's password. Requires a valid JWT."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "1. SuperAdmin - Create Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"newadmin\",\n  \"password\": \"admin_temp_pass\",\n  \"role\": \"Admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "SuperAdmin creates a new Admin user."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Admin - Create Ops User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"opsuser1\",\n  \"password\": \"ops_temp_pass\",\n  \"role\": \"Ops User\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Admin creates a new Ops User."
+					},
+					"response": []
+				},
+				{
+					"name": "3. SuperAdmin - Delete Admin",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "<admin_user_id_to_delete>"
+								}
+							]
+						},
+						"description": "SuperAdmin deletes an Admin user. Replace :id with the actual user ID."
+					},
+					"response": []
+				},
+				{
+					"name": "4. Admin - Delete Ops User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "<ops_user_id_to_delete>"
+								}
+							]
+						},
+						"description": "Admin deletes an Ops User. Replace :id with the actual user ID."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ops User Workflow",
+			"item": [
+				{
+					"name": "1. Upload Image (Protected)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/uploads",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"uploads"
+							]
+						},
+						"description": "Uploads an image to be processed. Requires a valid JWT."
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }

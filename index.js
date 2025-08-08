@@ -11,7 +11,31 @@ app.use(bodyParser.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connected'))
+  .then(() => {
+    console.log('MongoDB connected');
+    // Create SuperAdmin if not exists
+    const createSuperAdmin = async () => {
+      const User = require('./models/user');
+      const bcrypt = require('bcryptjs');
+      const superAdminUsername = 'SuperAdmin';
+      const superAdminPassword = 'Password123';
+
+      let superAdmin = await User.findOne({ username: superAdminUsername });
+      if (!superAdmin) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(superAdminPassword, salt);
+        superAdmin = new User({
+          username: superAdminUsername,
+          password: hashedPassword,
+          role: 'SuperAdmin',
+          isTemporaryPassword: false // SuperAdmin does not have a temporary password
+        });
+        await superAdmin.save();
+        console.log('SuperAdmin created.');
+      }
+    };
+    createSuperAdmin();
+  })
   .catch(err => console.log(err));
 
 // Routes

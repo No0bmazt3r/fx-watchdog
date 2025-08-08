@@ -1,0 +1,277 @@
+!pip install -q google-generativeai Pillow pandas
+import google.generativeai as genai
+from google.colab import files
+from PIL import Image
+import pandas as pd
+import json
+
+try:
+  from google.colab import userdata
+  GOOGLE_API_KEY = userdata.get('GOOGLE_API_KEY')
+except:
+  import os
+  GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+
+genai.configure(api_key=GOOGLE_API_KEY)
+import google.generativeai as genai
+from google.colab import files
+from PIL import Image
+import pandas as pd
+import json
+import io
+
+
+print("Please upload your image files.")
+uploaded = files.upload()
+
+if not uploaded:
+    print("No files uploaded. Please try again.")
+else:
+    # Prepare images for the model
+    images = []
+    image_names = []
+    for name, bytes_io in uploaded.items():
+        image_names.append(name)
+        images.append(Image.open(io.BytesIO(bytes_io)))
+
+    # Load the Gemini Vision model
+    try:
+        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
+    except Exception as e:
+        print(f"Error loading model: {e}")
+        model = None # Set model to None if loading fails
+
+    if model:
+        # Define the prompt to get structured output for multiple images
+        # We'll send the prompt followed by the list of images
+        prompt_parts = [
+            """
+            Analyze the content of each image provided. For each image, extract all key information, including dates, times, branch details, and specifically, any rate card information (like currency exchange rates).
+
+            Structure the extracted data as a single JSON array. Each element in the array must correspond to one input image, containing the extracted information from that specific image.
+
+            Within each image's JSON object in the array, include:
+            - An identifier for the image (e.g., "image_index").
+            - Any general information found (like "date", "time", "branch"). If a piece of information like "branch" is not present in the image, you can omit that key or provide an empty string value (e.g., "branch": "").
+            - If rate card data is present, include a nested JSON object specifically for "rates", listing currencies and their corresponding values. Ensure rate values are numbers.
+
+            Ensure the output is *only* the JSON array.
+
+            Example JSON structure for multiple images:
+            [
+              {
+                "image_index": 0,
+                "date": "YYYY-MM-DD",
+                "time": "HH:MM AM/PM",
+                "branch": "Branch Name/Address",
+                "rates": {
+                  "Currency1": Value1,
+                  "Currency2": Value2
+                },
+                "other_details": "Any other significant text or data from image 1"
+              },
+              {
+                "image_index": 1,
+                "date": "YYYY-MM-DD",
+                "branch": "", # Example of missing branch
+                "rates": {
+                   "CurrencyA": ValueA
+                },
+                "notes": "Information specific to image 2"
+              }
+              // ... add objects for subsequent images
+            ]
+
+            Return only the JSON array.
+            """
+        ]
+
+        # Add images to the prompt parts
+        prompt_parts.extend(images)
+
+
+        # Generate content from the model
+        try:
+            # Passing prompt_parts which now contains text and image objects
+            response = model.generate_content(prompt_parts)
+            response_text = response.text.strip()
+
+            print("\n🔍 Extracted JSON:")
+            print(response_text)
+
+            # The parsing logic for the returned JSON array would need to be updated in the next cell
+            # to handle the new list structure.
+            # For now, we just display the raw JSON response.
+            # The 'df' variable from previous runs might not be relevant here until parsing is done.
+            # df = pd.DataFrame() # Reset df as parsing is not done in this cell
+
+        except Exception as e:
+            print(f"Error generating content from model: {e}")
+            # df = pd.DataFrame() # Ensure df is defined even on model error
+    else:
+        print("Model was not loaded. Cannot proceed with content generation.")
+        # df = pd.DataFrame() # Ensure df is defined even if model loading failed
+
+# Note: The DataFrame 'df' is NOT created in this cell anymore.
+# The next cell (zN65pCmGVXjJ) will need to be modified to parse the list of JSON objects.
+# Parse the returned JSON and create a DataFrame
+
+# Check if response_text is available and not empty from the previous cell's execution
+if 'response_text' in locals() and response_text:
+    try:
+        # Attempt to load JSON. Handle potential markdown code blocks (e.g., ```json...```)
+        if response_text.strip().startswith("```json") and response_text.strip().endswith("```"):
+             # Remove the markdown code block fences
+             json_string = response_text.strip()[7:-3].strip()
+        else:
+             json_string = response_text.strip()
+
+        # Load the JSON data
+        data = json.loads(json_string)
+        print("✅ Successfully parsed JSON data.")
+        # Uncomment the line below to print the full parsed JSON structure for debugging
+        # print(json.dumps(data, indent=2))
+
+        # Initialize a list to hold the rows for the DataFrame
+        rows = []
+        df = pd.DataFrame() # Initialize df as empty DataFrame
+
+        # Check if the parsed data is a list (for multiple images)
+        if isinstance(data, list):
+            print(f"Processing data from {len(data)} images...")
+            for image_data in data:
+                if isinstance(image_data, dict):
+                    # Extract metadata for each image object, handling potential missing keys
+                    meta = {
+                        "image_index": image_data.get("image_index", "Unknown Index"),
+                        "date": image_data.get("date", "Unknown Date"),
+                        "time": image_data.get("time", "Unknown Time"),
+                        "branch": image_data.get("branch", "Unknown Branch") # Provide a default value
+                    }
+
+                    # Check if the 'rates' key exists and is a dictionary within the image object
+                    if isinstance(image_data.get("rates"), dict):
+                        print(f"Processing rates for image index {meta['image_index']}...")
+                        # Iterate through the rates and create rows for the DataFrame
+                        for currency, rate in image_data["rates"].items():
+                            # Ensure rate is not None and handle potential non-numeric rates if necessary
+                            try:
+                                rate_value = float(rate) # Convert rate to float
+                            except (ValueError, TypeError):
+                                print(f"⚠️ Could not convert rate '{rate}' for currency '{currency}' in image index {meta['image_index']} to float. Skipping or handling.")
+                                rate_value = None # Or a specific indicator like np.nan
+
+                            if rate_value is not None:
+                                 rows.append({
+                                    "currency": currency,
+                                    "rate": rate_value, # Use the converted rate
+                                    **meta # Add metadata to each row
+                                })
+                    else:
+                        print(f"⚠️ 'rates' key not found or is not a dictionary for image index {meta['image_index']}.")
+                        # Optionally add a row with just metadata if no rates were found but other info exists
+                        # rows.append(meta)
+
+
+                else:
+                    print(f"⚠️ Element in JSON array is not a dictionary: {image_data}")
+
+            # Create DataFrame if rows were generated
+            if rows:
+                df = pd.DataFrame(rows)
+                print("\n📊 Created DataFrame from extracted data:")
+                display(df.head()) # Display head of the created DataFrame
+                display(df.tail()) # Also display tail to see data from later images if many were uploaded
+            else:
+                print("❌ No valid data found in the JSON array to create DataFrame rows.")
+                df = pd.DataFrame() # Ensure df is an empty DataFrame
+
+
+        elif isinstance(data, dict):
+             # Keep handling for a single dictionary in case the model returns it sometimes
+            print("Processing data from a single image (JSON object)...")
+             # Extract metadata, handling potential variations in key names and missing keys
+            meta = {
+                # Prioritize keys like 'hari/day' but fall back to 'day' if not found
+                "day": data.get("hari/day", data.get("day", "Unknown Day")),
+                "date": data.get("tarikh/date", data.get("date", "Unknown Date")),
+                "time": data.get("masa/time", data.get("time", "Unknown Time")),
+                "branch": data.get("branch", "Unknown Branch") # Provide a default value
+            }
+
+            # Check if the 'rates' key exists and is a dictionary
+            if isinstance(data.get("rates"), dict):
+                print("Processing 'rates' data...")
+                # Iterate through the rates and create rows for the DataFrame
+                for currency, rate in data["rates"].items():
+                    # Ensure rate is not None and handle potential non-numeric rates if necessary
+                    try:
+                        rate_value = float(rate) # Convert rate to float
+                    except (ValueError, TypeError):
+                        print(f"⚠️ Could not convert rate '{rate}' for currency '{currency}' to float. Skipping or handling.")
+                        rate_value = None # Or a specific indicator like np.nan
+
+                    if rate_value is not None:
+                         rows.append({
+                            "currency": currency,
+                            "rate": rate_value, # Use the converted rate
+                            **meta # Add metadata to each row
+                        })
+
+                # Create DataFrame if rows were generated
+                if rows:
+                    df = pd.DataFrame(rows)
+                    print("\n📊 Created DataFrame from rates:")
+                    display(df.head()) # Display head of the created DataFrame
+                else:
+                    print("❌ No valid rate data found to create DataFrame rows.")
+                    df = pd.DataFrame() # Ensure df is an empty DataFrame
+
+            else:
+                print("⚠️ 'rates' key not found or is not a dictionary in the parsed JSON.")
+                print(f"Parsed JSON data structure keys: {list(data.keys())}") # Show available keys
+                df = pd.DataFrame() # Ensure df is an empty DataFrame
+
+
+        else:
+            print("❌ Parsed data is neither a list nor a dictionary as expected.")
+            print(f"Parsed data type: {type(data)}")
+            print(f"First 100 characters of attempted parse string: {json_string[:100]}")
+            df = pd.DataFrame() # Ensure df is an empty DataFrame
+
+    except json.JSONDecodeError as e:
+        print(f"\n❌ Failed to parse JSON: {e}")
+        print(f"Attempted to parse the following string:\n---\n{json_string}\n---")
+        data = {} # Ensure data is defined
+        df = pd.DataFrame() # Ensure df is an empty DataFrame
+    except Exception as e:
+        print(f"\nAn unexpected error occurred during processing after JSON parsing: {e}")
+        data = {} # Ensure data is defined
+        df = pd.DataFrame() # Ensure df is an empty DataFrame
+
+else:
+    print("❌ 'response_text' variable not found or is empty. Please ensure the previous cell (image processing and JSON extraction) was run successfully.")
+    data = {} # Ensure data is defined
+    df = pd.DataFrame() # Ensure df is an empty DataFrame
+
+# The DataFrame 'df' is now available for further processing (e.g., saving to CSV)
+def chunk_data(data_dict, chunk_size=2):
+    rates = data_dict.get("rates", {})
+    items = list(rates.items())
+
+    chunks = [dict(items[i:i+chunk_size]) for i in range(0, len(items), chunk_size)]
+    return chunks
+# Save the DataFrame to a CSV file
+
+# Check if the DataFrame 'df' exists and is not empty
+if 'df' in locals() and not df.empty:
+    try:
+        df.to_csv("output_rates.csv", index=False)
+        print("✅ DataFrame saved as output_rates.csv")
+    except Exception as e:
+        print(f"❌ An error occurred while saving the CSV: {e}")
+else:
+    print("⚠️ No DataFrame found or the DataFrame is empty. Cannot save to CSV.")
+
+# Note: The variable 'data' and the chunking logic are no longer used in this cell.
+files.download("output_rates.csv")

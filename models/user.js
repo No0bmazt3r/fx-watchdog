@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['Admin', 'Ops User'],
+    enum: ['SuperAdmin', 'Admin', 'Ops User'],
     required: true
   },
   isTemporaryPassword: {
