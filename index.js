@@ -15,7 +15,6 @@ mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTop
   .catch(err => console.log(err));
 
 // Routes
-app.use('/api/rates', require('./routes/rates'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/auth', require('./routes/auth'));
