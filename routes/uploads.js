@@ -6,27 +6,9 @@ const auth = require('../middleware/auth');
 const Upload = require('../models/upload');
 const Audit = require('../models/audit');
 const ExchangeRate = require('../models/exchangeRate');
+const { getOcrExtraction } = require('../services/aiService');
 
 const upload = multer({ dest: 'uploads/' });
-
-// A mock OCR function to simulate the output you provided
-const mockOcrExtraction = () => {
-  return [
-    {
-      "image_index": 0,
-      "date": "29/07/2025",
-      "rates": {
-        "INR (ACC)": 20.342676,
-        "BDT (ACC)": 29.100591,
-        "BDT (PIN)": 28.345562,
-        "NPR (ACC/PIN)": 32.520603,
-        "IDR (ACC)": 3840,
-        "PKR (ACC)": 66.68076,
-        "PHP (ACC)": 13.414248
-      }
-    }
-  ];
-};
 
 // @route   POST /api/uploads
 // @desc    Upload an image and extract rates
@@ -54,7 +36,7 @@ router.post('/', [auth, upload.single('image')], async (req, res) => {
     await audit.save();
 
     // **P2: OCR + LLM Extraction (Simulated)**
-    const extractedData = mockOcrExtraction();
+    const extractedData = await getOcrExtraction(req.file);
 
     // **P3: Save Rates**
     const savedRates = [];
