@@ -2,7 +2,7 @@ How to Test in Postman
   First, ensure your server is running. If it's not, I can start it for you.
    1. Import the New Collection:
        * Delete any old "FX Watchdog API" collection in Postman.
-       * Import the new collection from Resources\postman\fx-watchdog-api.postman_collection.json.
+       * Import the new collection from Resources\postman2\fx-watchdog-api.postman_collection.json.
        * Ensure "FX Watchdog - Local" environment is selected.
    2. Login as SuperAdmin:
        * Go to the Auth folder -> 1. Login request.

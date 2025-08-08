@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  fx-watchdog-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env
+    # If your MongoDB is running locally in another container, you would add it here
+    # depends_on:
+    #   - mongo
+
+# If you were running a local MongoDB container, you would define it here:
+#  mongo:
+#    image: mongo:latest
+#    ports:
+#      - "27017:27017"
+#    volumes:
+#      - mongo_data:/data/db
+
+# volumes:
+#  mongo_data:
