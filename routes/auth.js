@@ -35,7 +35,15 @@ router.post('/login', async (req, res) => {
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
-        res.json({ token, isTemporaryPassword: user.isTemporaryPassword });
+        res.json({
+          token,
+          isTemporaryPassword: user.isTemporaryPassword,
+          user: {
+            id: user.id,
+            username: user.username,
+            role: user.role
+          }
+        });
       }
     );
   } catch (err) {
@@ -58,7 +66,7 @@ router.post('/change-password', auth, async (req, res) => {
       isTemporaryPassword: false
     });
 
-    res.json({ msg: 'Password updated successfully' });
+    res.json({ msg: 'Password updated successfully', success: true });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
