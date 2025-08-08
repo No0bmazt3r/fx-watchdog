@@ -22,6 +22,42 @@ This is the backend repo for the live currency rate check.
     npm start
     ```
 
+## Full Workflow
+
+This project uses a local Python-based OCR service to extract data from images. The main Node.js application communicates with this local service.
+
+### 1. Running the Local OCR Service
+
+Before you can process images, you need to start the local OCR service.
+
+1.  **Install Python and pip:** If you don't have them, download and install from [python.org](https://python.org).
+2.  **Install Dependencies:** Open a terminal in the `services` directory and run:
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  **Run the Service:** In the same terminal, run:
+    ```bash
+    python ocr_service.py
+    ```
+    This will start a local server at `http://localhost:5000`.
+
+### 2. Testing with Postman
+
+Once the main server and the local OCR service are running, you can use the updated Postman collection to test the full workflow.
+
+1.  **Import the New Collection:**
+    *   Delete any old "FX Watchdog API" collection in Postman.
+    *   Import the new collection from `Resources/postman/fx-watchdog-api.postman_collection.json`.
+    *   Ensure "FX Watchdog - Local" environment is selected.
+
+2.  **Test the Local OCR Service (Optional):**
+    *   Go to the "Local OCR Service" folder -> "1. Test Local OCR" request.
+    *   In the Body, replace `<base64_encoded_image_string>` with a base64 encoded image string.
+    *   Click Send. You should see the JSON output from the OCR service.
+
+3.  **Follow the User Workflow:**
+    *   Follow the steps in the "Auth", "User Management", and "Ops User Workflow" folders to simulate the full process of creating users and uploading images for OCR processing.
+
 ## API Endpoints
 
 *   `POST /api/rates`: Create a new currency rate.
@@ -35,54 +71,3 @@ This is the backend repo for the live currency rate check.
         ```
 
 *   `GET /api/rates/latest?currencyPair=USD/MYR`: Get the latest rate for a specific currency pair.
-
-## How to Test with Postman
-
-First, ensure your server is running.
-
-### 1. Import the New Collection:
-* Delete any old "FX Watchdog API" collection in Postman.
-* Import the new collection from `Resources/postman/fx-watchdog-api.postman_collection.json`.
-* Ensure "FX Watchdog - Local" environment is selected.
-
-### 2. Login as SuperAdmin:
-* Go to the Auth folder -> 1. Login request.
-* In the Body, use username: `SuperAdmin`, password: `Password123`.
-* Click Send. The `authToken` and `isTemporaryPassword` variables will be set automatically.
-
-### 3. SuperAdmin Creates an Admin:
-* Go to User Management folder -> 1. SuperAdmin - Create Admin request.
-* Click Send. (You can change the username/password in the body if you wish).
-
-### 4. Login as the New Admin:
-* Go back to Auth folder -> 1. Login request.
-* Change the Body to the username and password of the Admin you just created (e.g., username: `newadmin`, password: `admin_temp_pass`).
-* Click Send. The `authToken` will now be for the Admin.
-
-### 5. Admin Changes Password (Optional but Recommended):
-* Go to Auth folder -> 2. Change Password request.
-* In the Body, set a `newPassword`.
-* Click Send.
-
-### 6. Admin Creates an Ops User:
-* Go to User Management folder -> 2. Admin - Create Ops User request.
-* Click Send. (You can change the username/password in the body if you wish).
-
-### 7. Login as the New Ops User:
-* Go back to Auth folder -> 1. Login request.
-* Change the Body to the username and password of the Ops User you just created (e.g., username: `opsuser1`, password: `ops_temp_pass`).
-* Click Send. The `authToken` will now be for the Ops User, and `isTemporaryPassword` will be true.
-
-### 8. Ops User Changes Password (Mandatory for Uploads):
-* Go to Auth folder -> 2. Change Password request.
-* In the Body, set a `newPassword`.
-* Click Send.
-
-### 9. Ops User Uploads Image (OCR+AI Simulation):
-* Go to Ops User Workflow folder -> 1. Upload Image (Protected) request.
-* Go to the Body tab, select a file for the `image` key.
-* Click Send. You will see the detailed JSON output from the simulated OCR+AI.
-
-### 10. Test Delete Functionalities:
-* To delete an Ops User: Log in as an Admin (or SuperAdmin), then use User Management -> 4. Admin - Delete Ops User. Remember to replace `:id` in the URL with the actual ID of the Ops User you want to delete (you can get this ID from the response when you created the Ops User).
-* To delete an Admin: Log in as a SuperAdmin, then use User Management -> 3. SuperAdmin - Delete Admin. Replace `:id` with the Admin's ID.
