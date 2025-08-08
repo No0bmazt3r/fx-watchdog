@@ -40,13 +40,20 @@ router.post('/', [auth, upload.single('image')], async (req, res) => {
 
     // **P3: Save Rates**
     const savedRates = [];
-    for (const item of extractedData) {
-      const newRate = new ExchangeRate({
-        upload: savedUpload._id,
-        ...item
-      });
-      const savedRate = await newRate.save();
-      savedRates.push(savedRate);
+    if (extractedData && extractedData.rates) {
+      for (const currency of Object.keys(extractedData.rates)) {
+        const rate = extractedData.rates[currency];
+        const newRate = new ExchangeRate({
+          upload: savedUpload._id,
+          date: extractedData.date,
+          time: extractedData.time,
+          branch: extractedData.branch,
+          currency: currency,
+          rate: rate
+        });
+        const savedRate = await newRate.save();
+        savedRates.push(savedRate);
+      }
     }
 
     // Create an audit log for the saved rates

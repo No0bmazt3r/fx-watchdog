@@ -7,10 +7,6 @@ const ExchangeRateSchema = new mongoose.Schema({
     ref: 'Upload',
     required: true
   },
-  image_index: {
-    type: Number,
-    required: true
-  },
   date: {
     type: String
   },
@@ -20,9 +16,13 @@ const ExchangeRateSchema = new mongoose.Schema({
   branch: {
     type: String
   },
-  rates: {
-    type: Map,
-    of: Number
+  currency: {
+    type: String,
+    required: true
+  },
+  rate: {
+    type: Number,
+    required: true
   },
   timestamp: {
     type: Date,
