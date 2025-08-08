@@ -1,0 +1,121 @@
+🔍 Extracted JSON:
+```json
+[
+  {
+    "image_index": 0,
+    "date": "29/07/2025",
+    "rates": {
+      "INR (ACC)": 20.342676,
+      "BDT (ACC)": 29.100591,
+      "BDT (PIN)": 28.345562,
+      "NPR (ACC/PIN)": 32.520603,
+      "IDR (ACC)": 3840,
+      "PKR (ACC)": 66.68076,
+      "PHP (ACC)": 13.414248
+    }
+  },
+  {
+    "image_index": 1,
+    "date": "29 - JULY - 2025",
+    "time": "09.00 AM",
+    "branch": "portklang",
+    "rates": {
+      "BDT ACC": 29.11,
+      "BDT PIN": 28.89,
+      "BDT ISLAMIC": 29.10,
+      "INDONESIA": 259.40,
+      "INDIA": 20.45,
+      "PAKISTAN": 67.15,
+      "NEPAL": 32.78,
+      "PHILIPPINES": 13.38,
+      "SRI LANKA": 71.09,
+      "VIETNAM": 5979,
+      "MYANMAR": 1051,
+      "THAILAND": 7.58
+    }
+  },
+  {
+    "image_index": 2,
+    "rates": {
+      "IDR": 3839.96,
+      "NPR": 32.41,
+      "INR": 20.25,
+      "PKR": 66.68,
+      "BDT": 28.24,
+      "PHP": 13.41,
+      "MMK": 1045,
+      "LKR": 70.76
+    }
+  },
+  {
+    "image_index": 3,
+    "rates": {
+      "Nepal": 32.72,
+      "Indonesia": 3877,
+      "India": 20.50,
+      "Sri Lanka": 70.72,
+      "Bangladesh": 29.07,
+      "Myanmar": 13.34,
+      "Philippines": 67.05,
+      "Pakistan": 1041
+    }
+  },
+  {
+    "image_index": 4,
+    "date": "2025.07.29",
+    "time": "AM 08:57",
+    "rates": {
+      "BDT": 28.50,
+      "INR": 20.25,
+      "MMK": 1043.00,
+      "PKR": 66.50,
+      "LKR": 70.50,
+      "VND": 6120.00,
+      "AUD": 0.3573,
+      "AED": 0.85,
+      "IDR": 3802.29,
+      "NPR": 32.29,
+      "PHP": 13.35,
+      "THB": 7.54,
+      "CNY": 1.69,
+      "AFN": 15.77
+    }
+  },
+  {
+    "image_index": 5,
+    "date": "29 Jul 2025",
+    "time": "10:18:45 AM",
+    "branch": "599, Jalan Tuanku Abdul Rahman 50350 Kuala Lumpur Malaysia",
+    "rates": {
+      "BDT": 28.50,
+      "IDR": 3802.29,
+      "NPR": 32.45,
+      "MMK": 1041.00,
+      "INR": 20.25,
+      "PKR": 66.50,
+      "LKR": 70.50,
+      "VND": 6120.00,
+      "AUD": 0.3573,
+      "AED": 0.85,
+      "AFN": 15.77
+    }
+  },
+  {
+    "image_index": 6,
+    "date": "29.07.25",
+    "time": "09:30",
+    "rates": {
+      "Indonesia": 3847.76,
+      "Pakistan": 66.84,
+      "Thailand": 7.61,
+      "Sri Lanka": 70.92,
+      "Vietnam": 6174.10,
+      "Nepal": 32.60,
+      "Philippines": 13.51,
+      "Myanmar": 1045.93,
+      "India": 20.43,
+      "Bangladesh (D2B)": 29.06,
+      "Bangladesh (PIN NUMBER)": 28.43
+    }
+  }
+]
