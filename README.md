@@ -43,9 +43,9 @@ FX Watchdog is a web service designed to extract foreign exchange (FX) rate info
 
     ```env
     PORT=3000
-    MONGODB_URI=mongodb+srv://sharvinkanesan6:8A2yah4gcEbddhqW@cluster0.qatas9k.mongodb.net/new_test?retryWrites=true&w=majority&appName=Cluster0
+    MONGODB_URI="YOUR_MONGO_DB"
     JWT_SECRET=your_jwt_secret
-    GOOGLE_API_KEY=AIzaSyAuJ9OiRBEB_vVAHp6YdnG0hYnNv15yLUQ
+    GOOGLE_API_KEY=YOUR_GEMINI_KEY
     ```
 
 4.  **Install Docker and Docker Compose:**
