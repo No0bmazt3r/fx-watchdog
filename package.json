@@ -1,0 +1,33 @@
+{
+  "name": "fx-watchdog",
+  "version": "1.0.0",
+  "description": "This is the backend repo for the live currency rate check",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/No0bmazt3r/fx-watchdog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/No0bmazt3r/fx-watchdog/issues"
+  },
+  "homepage": "https://github.com/No0bmazt3r/fx-watchdog#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "axios": "^1.11.0",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.1",
+    "multer": "^2.0.2"
+  }
+}
