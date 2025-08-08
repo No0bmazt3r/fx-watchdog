@@ -258,6 +258,42 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "Local OCR Service",
+			"item": [
+				{
+					"name": "1. Test Local OCR",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"image\": \"<base64_encoded_image_string>\"\n}"
+						},
+						"url": {
+							"raw": "http://localhost:5000/api/ocr",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"api",
+								"ocr"
+							]
+						},
+						"description": "Sends a base64 encoded image string to the local Python OCR service for processing. Replace `<base64_encoded_image_string>` with your actual base64 string."
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
+
