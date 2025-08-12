@@ -96,7 +96,31 @@
 			"name": "User Management",
 			"item": [
 				{
-					"name": "1. SuperAdmin - Create Admin",
+					"name": "1. Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+							"users"
+						]
+						},
+						"description": "Retrieves a list of all users. Requires Admin or SuperAdmin role."
+					},
+					"response": []
+				},
+				{
+					"name": "2. SuperAdmin - Create Admin",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -111,7 +135,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"newadmin\",\n  \"password\": \"admin_temp_pass\",\n  \"role\": \"Admin\"\n}"
+							"raw": "{\n  \"username\": \"newadmin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin_temp_pass\",\n  \"role\": \"Admin\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -120,15 +144,15 @@
 							],
 							"path": [
 								"api",
-								"users"
-							]
+							"users"
+						]
 						},
 						"description": "SuperAdmin creates a new Admin user."
 					},
 					"response": []
 				},
 				{
-					"name": "2. Admin - Create Ops User",
+					"name": "3. Admin - Create Ops User",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -143,7 +167,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"opsuser1\",\n  \"password\": \"ops_temp_pass\",\n  \"role\": \"Ops User\"\n}"
+							"raw": "{\n  \"username\": \"opsuser1\",\n  \"email\": \"ops@example.com\",\n  \"password\": \"ops_temp_pass\",\n  \"role\": \"Ops User\",\n  \"branch\": \"Main Branch\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -152,15 +176,15 @@
 							],
 							"path": [
 								"api",
-								"users"
-							]
+							"users"
+						]
 						},
 						"description": "Admin creates a new Ops User."
 					},
 					"response": []
 				},
 				{
-					"name": "3. SuperAdmin - Delete Admin",
+					"name": "4. SuperAdmin - Delete Admin",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -176,9 +200,9 @@
 							],
 							"path": [
 								"api",
-								"users",
-								":id"
-							],
+							"users",
+							":id"
+						],
 							"variable": [
 								{
 									"key": "id",
@@ -191,7 +215,7 @@
 					"response": []
 				},
 				{
-					"name": "4. Admin - Delete Ops User",
+					"name": "5. Admin - Delete Ops User",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -207,9 +231,9 @@
 							],
 							"path": [
 								"api",
-								"users",
-								":id"
-							],
+							"users",
+							":id"
+						],
 							"variable": [
 								{
 									"key": "id",

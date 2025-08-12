@@ -1,35 +1,38 @@
-
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
+const auth = require('../middleware/auth');
+const isAdminOrSuperAdmin = require('../middleware/isAdminOrSuperAdmin');
 const User = require('../models/user');
 const Audit = require('../models/audit');
-const auth = require('../middleware/auth');
 
-// Middleware to check for Admin or SuperAdmin role
-const isAdminOrSuperAdmin = (req, res, next) => {
-  if (req.user.role !== 'Admin' && req.user.role !== 'SuperAdmin') {
-    return res.status(403).json({ msg: 'Access denied. Admin or SuperAdmin role required.' });
+// @route   GET /api/users
+// @desc    Get all users
+// @access  Admin/SuperAdmin
+router.get('/', [auth, isAdminOrSuperAdmin], async (req, res) => {
+  try {
+    const users = await User.find().select('-password');
+    res.json(users);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
-  next();
-};
-
-// Middleware to check for SuperAdmin role
-const isSuperAdmin = (req, res, next) => {
-  if (req.user.role !== 'SuperAdmin') {
-    return res.status(403).json({ msg: 'Access denied. SuperAdmin role required.' });
-  }
-  next();
-};
+});
 
 // @route   POST /api/users
-// @desc    Create a new user (Admin or SuperAdmin)
+// @desc    Create a new user
+// @access  Admin/SuperAdmin
 router.post('/', [auth, isAdminOrSuperAdmin], async (req, res) => {
-  const { username, password, role } = req.body;
+  const { username, email, password, role, branch } = req.body;
 
   // Prevent Admins from creating SuperAdmins or other Admins
   if (req.user.role === 'Admin' && (role === 'SuperAdmin' || role === 'Admin')) {
     return res.status(403).json({ msg: 'Admins can only create Ops Users.' });
+  }
+
+  // Validate that branch is provided for Ops User
+  if (role === 'Ops User' && !branch) {
+    return res.status(400).json({ msg: 'Branch is required for Ops Users.' });
   }
 
   try {
@@ -37,17 +40,28 @@ router.post('/', [auth, isAdminOrSuperAdmin], async (req, res) => {
     if (user) {
       return res.status(400).json({ msg: 'User already exists' });
     }
+    
+    let emailExists = await User.findOne({ email });
+    if (emailExists) {
+        return res.status(400).json({ msg: 'Email already exists' });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = new User({
+    const newUserDetails = {
       username,
+      email,
       password: hashedPassword,
       role,
       isTemporaryPassword: true
-    });
+    };
 
+    if (role === 'Ops User') {
+      newUserDetails.branch = branch;
+    }
+
+    const newUser = new User(newUserDetails);
     const savedUser = await newUser.save();
 
     const audit = new Audit({
@@ -57,7 +71,11 @@ router.post('/', [auth, isAdminOrSuperAdmin], async (req, res) => {
     });
     await audit.save();
 
-    res.json(savedUser);
+    // Return user without password
+    const userToReturn = JSON.parse(JSON.stringify(savedUser));
+    delete userToReturn.password;
+
+    res.json(userToReturn);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -65,10 +83,12 @@ router.post('/', [auth, isAdminOrSuperAdmin], async (req, res) => {
 });
 
 // @route   DELETE /api/users/:id
-// @desc    Delete a user (Admin or SuperAdmin)
+// @desc    Delete a user
+// @access  Admin/SuperAdmin
 router.delete('/:id', [auth, isAdminOrSuperAdmin], async (req, res) => {
   try {
     const userToDelete = await User.findById(req.params.id);
+
     if (!userToDelete) {
       return res.status(404).json({ msg: 'User not found' });
     }
@@ -78,17 +98,17 @@ router.delete('/:id', [auth, isAdminOrSuperAdmin], async (req, res) => {
       return res.status(403).json({ msg: 'Admins can only delete Ops Users.' });
     }
 
-    // Prevent anyone from deleting a SuperAdmin
-    if (userToDelete.role === 'SuperAdmin') {
-        return res.status(403).json({ msg: 'SuperAdmins cannot be deleted.' });
+    // Prevent anyone but SuperAdmin from deleting a SuperAdmin
+    if (userToDelete.role === 'SuperAdmin' && req.user.role !== 'SuperAdmin') {
+        return res.status(403).json({ msg: 'Cannot delete a SuperAdmin.' });
     }
 
-    await User.findByIdAndDelete(req.params.id);
+    await userToDelete.remove();
 
     const audit = new Audit({
-      user: req.user.id,
-      action: 'Delete User',
-      details: `User ${userToDelete.username} deleted`
+        user: req.user.id,
+        action: 'Delete User',
+        details: `User ${userToDelete.username} (ID: ${req.params.id}) deleted`
     });
     await audit.save();
 

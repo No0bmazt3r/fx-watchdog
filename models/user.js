@@ -7,18 +7,33 @@ const UserSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
   password: {
     type: String,
     required: true
   },
   role: {
     type: String,
-    enum: ['SuperAdmin', 'Admin', 'Ops User'],
+    enum: ['Ops User', 'Admin', 'SuperAdmin'],
     required: true
+  },
+  branch: {
+    type: String,
+    required: function () {
+      return this.role === 'Ops User';
+    }
   },
   isTemporaryPassword: {
     type: Boolean,
     default: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 });
 
