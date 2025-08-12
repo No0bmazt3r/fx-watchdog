@@ -224,7 +224,7 @@
 			"name": "Ops User Workflow",
 			"item": [
 				{
-					"name": "1. Upload Image (Protected)",
+					"name": "1. Upload Image (for Review)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -240,6 +240,11 @@
 									"key": "image",
 									"type": "file",
 									"src": []
+								},
+								{
+									"key": "branch",
+									"value": "Main Branch",
+									"type": "text"
 								}
 							]
 						},
@@ -253,42 +258,65 @@
 								"uploads"
 							]
 						},
-						"description": "Uploads an image to be processed. Requires a valid JWT."
+						"description": "Uploads an image and branch name to be processed for review. Requires a valid JWT. The server returns a tempFileId."
 					},
 					"response": []
-				}
-			]
-		},
-		{
-			"name": "Local OCR Service",
-			"item": [
+				},
 				{
-					"name": "1. Test Local OCR",
+					"name": "2. Submit Verified Data",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"image\": \"<base64_encoded_image_string>\"\n}"
+							"raw": "{\n  \"tempFileId\": \"<temp_file_id_from_upload>\",\n  \"uploadId\": \"<upload_id_from_upload>\",\n  \"extractedData\": {\n    \"date\": \"2025-07-29\",\n    \"time\": \"09:30\",\n    \"branch\": \"Main Branch\",\n    \"rates\": {\n      \"IDR\": 3847.76,\n      \"PHP\": 13.51\n    }\n  }\n}"
 						},
 						"url": {
-							"raw": "http://localhost:5000/api/ocr",
-							"protocol": "http",
+							"raw": "{{base_url}}/api/submit",
 							"host": [
-								"localhost"
+								"{{base_url}}"
 							],
-							"port": "5000",
 							"path": [
 								"api",
-								"ocr"
+								"submit"
 							]
 						},
-						"description": "Sends a base64 encoded image string to the local Python OCR service for processing. Replace `<base64_encoded_image_string>` with your actual base64 string."
+						"description": "Submits the user-verified data to the server for final storage. The body for this request can be the exact JSON response from the 'Upload Image' request."
+					},
+					"response": []
+				},
+				{
+					"name": "3. Retrieve Image",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/uploads/image/<upload_id>",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"uploads",
+								"image",
+								"<upload_id>"
+							]
+						},
+						"description": "Retrieves a previously uploaded image by its upload ID. The ID is returned in the response from the upload endpoint."
 					},
 					"response": []
 				}
@@ -296,4 +324,3 @@
 		}
 	]
 }
-

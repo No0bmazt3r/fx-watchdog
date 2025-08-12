@@ -1,13 +1,13 @@
 const path = require('path');
 const { getAiExtraction } = require('./googleAiService');
 
-const getOcrExtraction = async (image) => {
+const getOcrExtraction = async (image, branchName) => {
   console.log(`[AIService] Sending image to Google AI for extraction: ${image.filename}`);
 
   const imagePath = path.join(__dirname, '..', 'uploads', image.filename);
 
   try {
-    const extractedData = await getAiExtraction(imagePath);
+    const extractedData = await getAiExtraction(imagePath, branchName);
     console.log('[AIService] Received response from Google AI');
     return extractedData;
   } catch (error) {

@@ -15,7 +15,15 @@ const UploadSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  timestamp: {
+  imageData: {
+    type: String, // Storing image as a Base64 string
+    required: true
+  },
+  mimetype: {
+    type: String,
+    required: true
+  },
+  createdAt: {
     type: Date,
     default: Date.now
   }
