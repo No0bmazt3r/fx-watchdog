@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, validationResult } = require('express-validator');
+const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const auth = require('../middleware/auth');
@@ -9,16 +10,15 @@ const ExchangeRate = require('../models/exchangeRate');
 const Upload = require('../models/upload');
 
 // @route   POST /api/submit
-// @desc    Submit extracted data for final processing
+// @desc    Submit extracted data for final processing and update status
 router.post(
   '/',
   [
     auth,
     [
-      body('tempFileId', 'Temporary file ID is required').not().isEmpty(),
+      body('uploadId', 'Upload ID is required').not().isEmpty(),
       body('extractedData', 'Extracted data is required').isObject(),
       body('extractedData.date', 'Date is required').not().isEmpty(),
-      body('extractedData.time', 'Time is required').not().isEmpty(),
       body('extractedData.rates', 'Rates are required').isObject(),
     ],
   ],
@@ -28,18 +28,27 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
-      const { tempFileId, extractedData } = req.body;
-      const { date, time, branch, rates } = extractedData;
+      const { uploadId, extractedData } = req.body;
+      const { date, time, branch, rates, extraDetails } = extractedData;
       const userId = req.user.id;
 
-      // Find the original upload record using the tempFileId
-      const upload = await Upload.findOne({ filename: tempFileId, user: userId });
+      const upload = await Upload.findById(uploadId).session(session);
       if (!upload) {
-        return res.status(404).json({ msg: 'Temporary file not found or access denied.' });
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(404).json({ msg: 'Upload record not found or access denied.' });
       }
 
-      // **P3: Save Rates**
+      if (upload.status === 'Completed') {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ msg: 'This upload has already been submitted and completed.' });
+      }
+
       const savedRates = [];
       if (rates) {
         for (const currency of Object.keys(rates)) {
@@ -47,35 +56,45 @@ router.post(
           const newRate = new ExchangeRate({
             upload: upload._id,
             date: date,
-            time: time,
-            branch: branch || '', // Use branch from extracted data, default to empty string
+            time: time || '00:00',
+            branch: branch || '',
             currency: currency,
             rate: rate,
           });
-          const savedRate = await newRate.save();
+          const savedRate = await newRate.save({ session });
           savedRates.push(savedRate);
         }
       }
 
-      // Create an audit log for the saved rates
+      upload.status = 'Completed';
+      if (extraDetails) {
+        upload.extraDetails = extraDetails;
+      }
+      await upload.save({ session });
+
       const rateAudit = new Audit({
         user: userId,
         action: 'Submit Verified Rates',
         details: `${savedRates.length} rates saved from upload ${upload.filename}`,
       });
-      await rateAudit.save();
+      await rateAudit.save({ session });
 
-      // Delete the temporary file from the filesystem
-      const tempFilePath = path.join(__dirname, '..', 'uploads', tempFileId);
-      fs.unlink(tempFilePath, (err) => {
-        if (err) {
-          // Log the error but don't block the response as the main operation was successful
-          console.error(`Error deleting temporary file ${tempFileId}:`, err);
-        }
-      });
+      await session.commitTransaction();
+      session.endSession();
 
-      res.json({ msg: 'Data submitted successfully.', rates: savedRates });
+      if (upload.path) {
+        fs.unlink(upload.path, (err) => {
+          if (err) {
+            console.error(`Error deleting temporary file ${upload.path}:`, err);
+          }
+        });
+      }
+
+      res.json({ msg: 'Data submitted and status updated to Completed.', rates: savedRates });
+
     } catch (err) {
+      await session.abortTransaction();
+      session.endSession();
       console.error(err.message);
       res.status(500).send('Server Error');
     }

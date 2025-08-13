@@ -57,14 +57,24 @@ router.post('/login', async (req, res) => {
 router.post('/change-password', auth, async (req, res) => {
   const { newPassword } = req.body;
 
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ msg: 'Password must be at least 6 characters long.' });
+  }
+
   try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found.' });
+    }
+
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
-    await User.findByIdAndUpdate(req.user.id, {
-      password: hashedPassword,
-      isTemporaryPassword: false
-    });
+    user.password = hashedPassword;
+    user.isTemporaryPassword = false;
+
+    await user.save();
 
     res.json({ msg: 'Password updated successfully', success: true });
   } catch (err) {

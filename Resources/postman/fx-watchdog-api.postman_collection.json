@@ -15,12 +15,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"const response = pm.response.json();\r",
-									"pm.collectionVariables.set(\"authToken\", response.token);\r",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const response = pm.response.json();",
+									"pm.collectionVariables.set(\"authToken\", response.token);",
 									"pm.collectionVariables.set(\"isTemporaryPassword\", response.isTemporaryPassword);"
 								],
 								"type": "text/javascript"
@@ -93,31 +93,7 @@
 			"name": "User Management",
 			"item": [
 				{
-					"name": "1. Get All Users",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/users",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-							"users"
-						]
-						},
-						"description": "Retrieves a list of all users. Requires Admin or SuperAdmin role."
-					},
-					"response": []
-				},
-				{
-					"name": "2. SuperAdmin - Create Admin",
+					"name": "1. SuperAdmin - Create Admin",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -132,7 +108,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"newadmin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin_temp_pass\",\n  \"role\": \"Admin\"\n}"
+							"raw": "{\n  \"username\": \"newadmin\",\n  \"password\": \"admin_temp_pass\",\n  \"role\": \"Admin\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -141,15 +117,15 @@
 							],
 							"path": [
 								"api",
-							"users"
-						]
+								"users"
+							]
 						},
 						"description": "SuperAdmin creates a new Admin user."
 					},
 					"response": []
 				},
 				{
-					"name": "3. Admin - Create Ops User",
+					"name": "2. Admin - Create Ops User",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -164,7 +140,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"opsuser1\",\n  \"email\": \"ops@example.com\",\n  \"password\": \"ops_temp_pass\",\n  \"role\": \"Ops User\",\n  \"branch\": \"Main Branch\"\n}"
+							"raw": "{\n  \"username\": \"opsuser1\",\n  \"password\": \"ops_temp_pass\",\n  \"role\": \"Ops User\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -173,15 +149,15 @@
 							],
 							"path": [
 								"api",
-							"users"
-						]
+								"users"
+							]
 						},
 						"description": "Admin creates a new Ops User."
 					},
 					"response": []
 				},
 				{
-					"name": "4. SuperAdmin - Delete Admin",
+					"name": "3. SuperAdmin - Delete Admin",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -197,9 +173,9 @@
 							],
 							"path": [
 								"api",
-							"users",
-							":id"
-						],
+								"users",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -212,7 +188,7 @@
 					"response": []
 				},
 				{
-					"name": "5. Admin - Delete Ops User",
+					"name": "4. Admin - Delete Ops User",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -228,9 +204,9 @@
 							],
 							"path": [
 								"api",
-							"users",
-							":id"
-						],
+								"users",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -248,7 +224,7 @@
 			"name": "Ops User Workflow",
 			"item": [
 				{
-					"name": "1. Upload Image (for Review)",
+					"name": "1. Upload Image (Protected)",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -264,11 +240,6 @@
 									"key": "image",
 									"type": "file",
 									"src": []
-								},
-								{
-									"key": "branch",
-									"value": "Main Branch",
-									"type": "text"
 								}
 							]
 						},
@@ -282,65 +253,42 @@
 								"uploads"
 							]
 						},
-						"description": "Uploads an image and branch name to be processed for review. Requires a valid JWT. The server returns a tempFileId."
+						"description": "Uploads an image to be processed. Requires a valid JWT."
 					},
 					"response": []
-				},
+				}
+			]
+		},
+		{
+			"name": "Local OCR Service",
+			"item": [
 				{
-					"name": "2. Submit Verified Data",
+					"name": "1. Test Local OCR",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
-							},
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"tempFileId\": \"<temp_file_id_from_upload>\",\n  \"uploadId\": \"<upload_id_from_upload>\",\n  \"extractedData\": {\n    \"date\": \"2025-07-29\",\n    \"time\": \"09:30\",\n    \"branch\": \"Main Branch\",\n    \"rates\": {\n      \"IDR\": 3847.76,\n      \"PHP\": 13.51\n    }\n  }\n}"
+							"raw": "{\n  \"image\": \"<base64_encoded_image_string>\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/submit",
+							"raw": "http://localhost:5000/api/ocr",
+							"protocol": "http",
 							"host": [
-								"{{base_url}}"
+								"localhost"
 							],
+							"port": "5000",
 							"path": [
 								"api",
-								"submit"
+								"ocr"
 							]
 						},
-						"description": "Submits the user-verified data to the server for final storage. The body for this request can be the exact JSON response from the 'Upload Image' request."
-					},
-					"response": []
-				},
-				{
-					"name": "3. Retrieve Image",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/uploads/image/<upload_id>",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"uploads",
-								"image",
-								"<upload_id>"
-							]
-						},
-						"description": "Retrieves a previously uploaded image by its upload ID. The ID is returned in the response from the upload endpoint."
+						"description": "Sends a base64 encoded image string to the local Python OCR service for processing. Replace <base64_encoded_image_string> with your actual base64 string."
 					},
 					"response": []
 				}

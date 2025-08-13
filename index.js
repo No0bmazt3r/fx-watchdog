@@ -22,6 +22,7 @@ mongoose.connect(process.env.MONGODB_URI)
       const User = require('./models/user');
       const bcrypt = require('bcryptjs');
       const superAdminUsername = 'SuperAdmin';
+      const superAdminEmail = 'superadmin@example.com';
       const superAdminPassword = 'Password123';
 
       let superAdmin = await User.findOne({ username: superAdminUsername });
@@ -30,6 +31,7 @@ mongoose.connect(process.env.MONGODB_URI)
         const hashedPassword = await bcrypt.hash(superAdminPassword, salt);
         superAdmin = new User({
           username: superAdminUsername,
+          email: superAdminEmail,
           password: hashedPassword,
           role: 'SuperAdmin',
           isTemporaryPassword: false // SuperAdmin does not have a temporary password
