@@ -13,7 +13,7 @@ const UploadSchema = new mongoose.Schema({
   },
   path: {
     type: String,
-    required: true
+    required: false
   },
   imageData: {
     type: String, // Storing image as a Base64 string
@@ -22,6 +22,25 @@ const UploadSchema = new mongoose.Schema({
   mimetype: {
     type: String,
     required: true
+  },
+  extraDetails: {
+    type: [String],
+    required: false
+  },
+  status: {
+    type: String,
+    enum: ['Pending', 'Completed', 'Approved', 'Rejected'],
+    default: 'Pending',
+    index: true
+  },
+  adminMessage: {
+    type: String,
+    required: false // Optional message from admin
+  },
+  adminActionBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: false // User who performed the admin action
   },
   createdAt: {
     type: Date,

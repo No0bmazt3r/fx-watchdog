@@ -82,6 +82,57 @@ router.post('/', [auth, isAdminOrSuperAdmin], async (req, res) => {
   }
 });
 
+// @route   PATCH /api/users/:id/password
+// @desc    Admin/SuperAdmin change another user's password
+// @access  Admin/SuperAdmin
+router.patch('/:id/password', [auth, isAdminOrSuperAdmin], async (req, res) => {
+  const { newPassword } = req.body;
+
+  if (!newPassword) {
+    return res.status(400).json({ msg: 'New password is required.' });
+  }
+
+  try {
+    const userToUpdate = await User.findById(req.params.id);
+
+    if (!userToUpdate) {
+      return res.status(404).json({ msg: 'User not found.' });
+    }
+
+    // Granular access control for password changes
+    if (req.user.role === 'Admin') {
+      // Admin can only change Ops User passwords
+      if (userToUpdate.role !== 'Ops User') {
+        return res.status(403).json({ msg: 'Admins can only change Ops User passwords.' });
+      }
+    } else if (req.user.role === 'SuperAdmin') {
+      // SuperAdmin can change Admin or Ops User passwords, but not another SuperAdmin's
+      if (userToUpdate.role === 'SuperAdmin') {
+        return res.status(403).json({ msg: "SuperAdmins cannot change another SuperAdmin's password." });
+      }
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    userToUpdate.password = hashedPassword;
+    userToUpdate.isTemporaryPassword = false;
+    await userToUpdate.save(); // Use save() to trigger pre-save hooks if any (though none exist currently)
+
+    const audit = new Audit({
+      user: req.user.id,
+      action: 'Change User Password',
+      details: `Password for user ${userToUpdate.username} (ID: ${req.params.id}) changed by ${req.user.username}.`
+    });
+    await audit.save();
+
+    res.json({ msg: 'User password updated successfully.' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
 // @route   DELETE /api/users/:id
 // @desc    Delete a user
 // @access  Admin/SuperAdmin

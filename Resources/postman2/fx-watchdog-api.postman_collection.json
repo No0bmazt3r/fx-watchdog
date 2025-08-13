@@ -1,35 +1,15 @@
 {
 	"info": {
 		"_postman_id": "a8a1b3a3-1b3c-4c3e-8b1a-9e8e1f1d0c2c",
-		"name": "FX Watchdog API",
+		"name": "FX Watchdog API - Final",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Auth",
+			"name": "1. Authentication",
 			"item": [
 				{
-					"name": "1. Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {",
-									"    pm.response.to.have.status(200);",
-									"});",
-									"",
-									"const response = pm.response.json();",
-									"pm.collectionVariables.set(\"authToken\", response.token);",
-									"pm.collectionVariables.set(\"isTemporaryPassword\", response.isTemporaryPassword);",
-									"pm.collectionVariables.set(\"userId\", response.user.id);",
-									"pm.collectionVariables.set(\"username\", response.user.username);",
-									"pm.collectionVariables.set(\"userRole\", response.user.role);"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
+					"name": "Login",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -53,12 +33,37 @@
 								"login"
 							]
 						},
-						"description": "Logs in a user and returns a JWT, user details, and a flag for temporary passwords. Automatically sets authToken, isTemporaryPassword, userId, username, and userRole collection variables."
+						"description": "Logs in a user and returns a JWT."
 					},
-					"response": []
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"try {",
+									"    let jsonData = pm.response.json();",
+									"    console.log('Login response received:', jsonData);",
+									"    if (jsonData && jsonData.token) {",
+									"        pm.environment.set('authToken', jsonData.token);",
+									"        pm.environment.set('userId', jsonData.user.id);",
+									"        pm.environment.set('username', jsonData.user.username);",
+									"        pm.environment.set('userRole', jsonData.user.role);",
+									"        console.log('authToken environment variable updated successfully.');",
+									"    } else {",
+									"        console.error('Error: Token not found in login response.');",
+									"    }",
+									"} catch (e) {",
+									"    console.error('Error parsing login response:', e);",
+									"}"
+								]
+							}
+						}
+					]
 				},
 				{
-					"name": "2. Change Password",
+					"name": "Change Password",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -86,14 +91,14 @@
 								"change-password"
 							]
 						},
-						"description": "Changes the user's password. Requires a valid JWT. Returns `success: true` on success."
+						"description": "Changes the user's password. Requires a valid JWT."
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "User Management",
+			"name": "2. User Management (Admin Only)",
 			"item": [
 				{
 					"name": "1. Get All Users",
@@ -112,15 +117,15 @@
 							],
 							"path": [
 								"api",
-							"users"
-						]
+								"users"
+							]
 						},
-						"description": "Retrieves a list of all users. Requires Admin or SuperAdmin role."
+						"description": "Retrieves a list of all users."
 					},
 					"response": []
 				},
 				{
-					"name": "2. SuperAdmin - Create Admin",
+					"name": "2. SuperAdmin - Create User",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -135,7 +140,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"newadmin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin_temp_pass\",\n  \"role\": \"Admin\"\n}"
+							"raw": "{\n  \"username\": \"new_user_name\",\n  \"email\": \"user@example.com\",\n  \"password\": \"temporary_password\",\n  \"role\": \"Admin\",\n  \"branch\": \"(Required for Ops User only)\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -144,10 +149,10 @@
 							],
 							"path": [
 								"api",
-							"users"
-						]
+								"users"
+							]
 						},
-						"description": "SuperAdmin creates a new Admin user."
+						"description": "SuperAdmin creates a new user. The 'role' can be 'Admin' or 'Ops User'. If creating an 'Ops User', the 'branch' field is required."
 					},
 					"response": []
 				},
@@ -176,10 +181,10 @@
 							],
 							"path": [
 								"api",
-							"users"
-						]
+								"users"
+							]
 						},
-						"description": "Admin creates a new Ops User."
+						"description": "Admin creates a new Ops User. Make sure you are logged in as an Admin."
 					},
 					"response": []
 				},
@@ -194,23 +199,17 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/users/:id",
+							"raw": "{{base_url}}/api/users/{{admin_user_id}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-							"users",
-							":id"
-						],
-							"variable": [
-								{
-									"key": "id",
-									"value": "<admin_user_id_to_delete>"
-								}
+								"users",
+								"{{admin_user_id}}"
 							]
 						},
-						"description": "SuperAdmin deletes an Admin user. Replace :id with the actual user ID."
+						"description": "SuperAdmin deletes an Admin user. Set admin_user_id environment variable with the actual user ID."
 					},
 					"response": []
 				},
@@ -225,127 +224,306 @@
 							}
 						],
 						"url": {
-							"raw": "{{base_url}}/api/users/:id",
+							"raw": "{{base_url}}/api/users/{{ops_user_id}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-							"users",
-							":id"
-						],
-							"variable": [
-								{
-									"key": "id",
-									"value": "<ops_user_id_to_delete>"
-								}
+								"users",
+								"{{ops_user_id}}"
 							]
 						},
-						"description": "Admin deletes an Ops User. Replace :id with the actual user ID."
+						"description": "Admin deletes an Ops User. Set ops_user_id environment variable with the actual user ID."
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "Ops User Workflow",
+			"name": "3. Rate Card Workflow",
 			"item": [
 				{
-					"name": "1. Upload Image (for Review)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "image",
-									"type": "file",
-									"src": []
+					"name": "Ops User Workflow",
+					"item": [
+						{
+							"name": "Step 1a: Upload Image for Extraction",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "image",
+											"type": "file",
+											"src": []
+										},
+										{
+											"key": "branch",
+											"value": "Main Branch",
+											"type": "text"
+										}
+									]
 								},
+								"url": {
+									"raw": "{{base_url}}/api/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads"
+									]
+								},
+								"description": "Uploads an image and branch name. The API returns extracted data with a 'Pending' status."
+							},
+							"response": [],
+							"event": [
 								{
-									"key": "branch",
-									"value": "Main Branch",
-									"type": "text"
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"try {",
+											"    let jsonData = pm.response.json();",
+											"    if (jsonData && jsonData.uploadId) {",
+											"        pm.environment.set('uploadId', jsonData.uploadId);",
+											"        console.log('Upload ID saved:', jsonData.uploadId);",
+											"    }",
+											"    if (jsonData && jsonData.tempFileId) {",
+											"        pm.environment.set('tempFileId', jsonData.tempFileId);",
+											"        console.log('Temp File ID saved:', jsonData.tempFileId);",
+											"    }",
+											"} catch (e) {",
+											"    console.error('Error parsing upload response:', e);",
+											"}"
+										]
+									}
 								}
 							]
 						},
-						"url": {
-							"raw": "{{base_url}}/api/uploads",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"uploads"
-							]
-						},
-						"description": "Uploads an image and branch name to be processed for review. Requires a valid JWT. The server returns a tempFileId."
-					},
-					"response": []
-				},
-				{
-					"name": "2. Submit Verified Data",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
+						{
+							"name": "Step 1b: Upload Text for Extraction",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"text\": \"Today Rate\\nDate:04/08/2025\\n\\n Ria. রিয়ার মাধ্যমে \\nবৈধ ভাবে দেশে টাকা পাঠান \\n BANGLADESH \\n Bank Account \\n28.75+2.5%= 29.46TAKA\\n \\n Pin/Cash Pickup 28.30+2.50%=29.00\\n \\nBkash 28.40+ 2.50%=29.10\\n\\nNEPAL.          =32.55\\nPAKISTAN    =66.00\\nINDIA             =20.30\\nMYANMAR   =1030.00\\nINDONESIA  =3802.88\\nPHILIPPINE  =13.55\\nSRI LANKA   =\\nVETNAM.           =\\n*This rate is available only at MEDAN PASAR BRANCH\\n\\n*Charge Rm10,15,20\\n\\n যেকোনো মুহূর্তে রেট পরিবর্তন হতে পারে।\\n\\n\",\n  \"branch\": \"Main Branch\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads"
+									]
+								},
+								"description": "Uploads raw text for extraction. The API returns extracted data with a 'Pending' status."
 							},
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"tempFileId\": \"<temp_file_id_from_upload>\",\n  \"uploadId\": \"<upload_id_from_upload>\",\n  \"extractedData\": {\n    \"date\": \"2025-07-29\",\n    \"time\": \"09:30\",\n    \"branch\": \"Main Branch\",\n    \"rates\": {\n      \"IDR\": 3847.76,\n      \"PHP\": 13.51\n    }\n  }\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/submit",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"submit"
+							"response": [],
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"type": "text/javascript",
+										"exec": [
+											"try {",
+											"    let jsonData = pm.response.json();",
+											"    if (jsonData && jsonData.uploadId) {",
+											"        pm.environment.set('uploadId', jsonData.uploadId);",
+											"        console.log('Upload ID saved:', jsonData.uploadId);",
+											"    }",
+											"    if (jsonData && jsonData.tempFileId) {",
+											"        pm.environment.set('tempFileId', jsonData.tempFileId);",
+											"        console.log('Temp File ID saved:', jsonData.tempFileId);",
+											"    }",
+											"} catch (e) {",
+											"    console.error('Error parsing upload response:', e);",
+											"}"
+										]
+									}
+								}
 							]
 						},
-						"description": "Submits the user-verified data to the server for final storage. The body for this request can be the exact JSON response from the 'Upload Image' request."
-					},
-					"response": []
+						{
+							"name": "Step 2: Submit Verified Data",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"tempFileId\": \"{{tempFileId}}\",\n  \"uploadId\": \"{{uploadId}}\",\n  \"extractedData\": {\n    \"date\": \"2025-07-29\",\n    \"time\": \"09:30\",\n    \"branch\": \"Main Branch\",\n    \"rates\": {\n      \"IDR\": 3847.76,\n      \"PHP\": 13.51\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/submit",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"submit"
+									]
+								},
+								"description": "Submits the verified data. The body can be the direct response from the upload endpoint. On success, the upload status is changed to 'Completed'."
+							},
+							"response": []
+						}
+					]
 				},
 				{
-					"name": "3. Retrieve Image",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/uploads/image/<upload_id>",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"uploads",
-								"image",
-								"<upload_id>"
-							]
+					"name": "Admin Workflow",
+					"item": [
+						{
+							"name": "Get All Uploads",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/uploads?status=Pending&page=1&limit=10",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "Pending"
+										},
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								},
+								"description": "Retrieves a paginated list of all uploads. Can be filtered by status."
+							},
+							"response": []
 						},
-						"description": "Retrieves a previously uploaded image by its upload ID. The ID is returned in the response from the upload endpoint."
-					},
-					"response": []
+						{
+							"name": "Get Specific Upload",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/uploads/{{uploadId}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads",
+										"{{uploadId}}"
+									]
+								},
+								"description": "Retrieves a specific upload by its ID. Uses uploadId environment variable."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Upload Status",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"status\": \"Rejected\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/uploads/{{uploadId}}/status",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads",
+										"{{uploadId}}",
+										"status"
+									]
+								},
+								"description": "Updates the status of a specific upload. Allowed values: Pending, Completed, Rejected. Uses uploadId environment variable."
+							},
+							"response": []
+						},
+						{
+							"name": "Retrieve Uploaded Image",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{base_url}}/api/uploads/image/{{uploadId}}",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads",
+										"image",
+										"{{uploadId}}"
+									]
+								},
+								"description": "Retrieves a previously uploaded image by its upload ID. Uses uploadId environment variable."
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		}
