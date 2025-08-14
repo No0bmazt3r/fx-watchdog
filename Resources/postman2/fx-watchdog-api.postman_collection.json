@@ -236,448 +236,12 @@
 						},
 						"description": "Admin deletes an Ops User. Set ops_user_id environment variable with the actual user ID."
 					},
-					,
-			"name": "Branch Management (Admin/SuperAdmin Only)",
-			"item": [
-				{
-					"name": "Create Branch",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"New Branch Name\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Creates a new branch. Requires Admin or SuperAdmin privileges."
-					},
 					"response": []
-				},
-				{
-					"name": "Get All Branches",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Retrieves a list of all branches. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Branch",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "<branch_id_to_delete>"
-								}
-							]
-						},
-						"description": "Deletes a branch by ID. Requires SuperAdmin privileges. Replace :id with the actual branch ID."
-					},
-					,
-			"name": "Branch Management (Admin/SuperAdmin Only)",
-			"item": [
-				{
-					"name": "Create Branch",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"New Branch Name\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Creates a new branch. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Branches",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Retrieves a list of all branches. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Branch",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "<branch_id_to_delete>"
-								}
-							]
-						},
-						"description": "Deletes a branch by ID. Requires SuperAdmin privileges. Replace :id with the actual branch ID."
-					},
-					,
-			"name": "Branch Management (Admin/SuperAdmin Only)",
-			"item": [
-				{
-					"name": "Create Branch",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"New Branch Name\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Creates a new branch. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Branches",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Retrieves a list of all branches. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Branch",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "<branch_id_to_delete>"
-								}
-							]
-						},
-						"description": "Deletes a branch by ID. Requires SuperAdmin privileges. Replace :id with the actual branch ID."
-					},
-					,
-			"name": "Branch Management (Admin/SuperAdmin Only)",
-			"item": [
-				{
-					"name": "Create Branch",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"New Branch Name\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Creates a new branch. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Branches",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Retrieves a list of all branches. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Branch",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "<branch_id_to_delete>"
-								}
-							]
-						},
-						"description": "Deletes a branch by ID. Requires SuperAdmin privileges. Replace :id with the actual branch ID."
-					},
-					,
-			"name": "Branch Management (Admin/SuperAdmin Only)",
-			"item": [
-				{
-					"name": "Create Branch",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"New Branch Name\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Creates a new branch. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Branches",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches"
-							]
-						},
-						"description": "Retrieves a list of all branches. Requires Admin or SuperAdmin privileges."
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Branch",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "x-auth-token",
-								"value": "{{authToken}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/api/branches/:id",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"branches",
-								":id"
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "<branch_id_to_delete>"
-								}
-							]
-						},
-						"description": "Deletes a branch by ID. Requires SuperAdmin privileges. Replace :id with the actual branch ID."
-					},
-					,
-			"name": "Branch Management (Admin/SuperAdmin Only)",
+				}
+			]
+		},
+		{
+			"name": "3. Branch Management (Admin/SuperAdmin Only)",
 			"item": [
 				{
 					"name": "Create Branch",
@@ -769,7 +333,7 @@
 			]
 		},
 		{
-			"name": "3. Rate Card Workflow",
+			"name": "4. Rate Card Workflow",
 			"item": [
 				{
 					"name": "Ops User Workflow",
@@ -922,39 +486,41 @@
 								"description": "Submits the verified data. The body can be the direct response from the upload endpoint. On success, the upload status is changed to 'Completed'."
 							},
 							"response": []
-					},
-					{
-						"name": "Get Upload History",
-						"request": {
-							"method": "GET",
-							"header": [
-								{
-									"key": "x-auth-token",
-									"value": "{{authToken}}"
-								}
-							],
-							"url": {
-								"raw": "{{base_url}}/api/uploads/history?page=1&limit=10",
-								"host": [
-									"{{base_url}}"
-								],
-								"path": [
-									"api",
-									"uploads",
-									"history"
-								],
-								"query": [
+						},
+						{
+							"name": "Get Upload History",
+							"request": {
+								"method": "GET",
+								"header": [
 									{
-										"key": "page",
-										"value": "1"
-									},
-									{
-										"key": "limit",
-										"value": "10"
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
 									}
-								]
+								],
+								"url": {
+									"raw": "{{base_url}}/api/uploads/history?page=1&limit=10",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads",
+										"history"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								},
+								"description": "Retrieves a paginated list of upload history for the authenticated user."
 							},
-							"description": "Retrieves a paginated list of upload history for the authenticated user."
+							"response": []
 						},
 						{
 							"name": "Get Latest Upload",
