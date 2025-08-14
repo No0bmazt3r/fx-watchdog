@@ -48,6 +48,7 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/submit', require('./routes/submit'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/branches', require('./routes/branches'));
 
 app.get('/', (req, res) => {
   res.send('FX Watchdog API');

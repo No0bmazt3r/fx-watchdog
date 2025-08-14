@@ -130,26 +130,61 @@ describe('uploadService', () => {
         uploads: mockUploads,
         totalPages: 1,
         currentPage: 1,
+      
       });
     });
   });
 
   // Commenting out getUploadById tests for now due to complex mocking issues
   // describe('getUploadById', () => {
+  //   // Mock the populate chain
+  //   const mockPopulateChain = {
+  //     populate: jest.fn().mockImplementation(function() {
+  //       return {
+  //         populate: jest.fn().mockReturnThis(), // For the second populate call
+  //         exec: jest.fn(), // The final method that resolves the promise
+  //         then: jest.fn(function(resolve, reject) {
+  //           // This makes the populate chain awaitable
+  //           return this.exec().then(resolve, reject);
+  //         }),
+  //       };
+  //     }),
+  //     exec: jest.fn(), // This exec is for the case where populate is not called
+  //     then: jest.fn(function(resolve, reject) {
+  //       // This makes the initial findById awaitable if populate is not called
+  //       return this.exec().then(resolve, reject);
+  //     }),
+  //   };
+
+  //   beforeEach(() => {
+  //     Upload.findById.mockReturnValue(mockPopulateChain);
+  //     mockPopulateChain.populate.mockClear();
+  //     mockPopulateChain.exec.mockClear();
+  //     mockPopulateChain.then.mockClear();
+  //   });
+
   //   it('should return an upload by ID', async () => {
   //     const mockUpload = { _id: 'uploadId123', user: { username: 'testuser' }, adminActionBy: { username: 'admin' } };
-  //     Upload.findById.mockResolvedValue(mockUpload);
+  //     mockPopulateChain.exec.mockResolvedValue(mockUpload);
 
   //     const result = await uploadService.getUploadById('uploadId123');
 
   //     expect(Upload.findById).toHaveBeenCalledWith('uploadId123');
+  //     expect(mockPopulateChain.populate).toHaveBeenCalledWith('user', 'username email');
+  //     expect(mockPopulateChain.populate).toHaveBeenCalledWith('adminActionBy', 'username');
+  //     expect(mockPopulateChain.exec).toHaveBeenCalledTimes(1);
   //     expect(result).toEqual(mockUpload);
   //   });
 
   //   it('should throw an error if upload not found', async () => {
-  //     Upload.findById.mockResolvedValue(null);
+  //     mockPopulateChain.exec.mockResolvedValue(null);
 
   //     await expect(uploadService.getUploadById('nonExistentId')).rejects.toThrow('Upload not found.');
+
+  //     expect(Upload.findById).toHaveBeenCalledWith('nonExistentId');
+  //     expect(mockPopulateChain.populate).toHaveBeenCalledWith('user', 'username email');
+  //     expect(mockPopulateChain.populate).toHaveBeenCalledWith('adminActionBy', 'username');
+  //     expect(mockPopulateChain.exec).toHaveBeenCalledTimes(1);
   //   });
   // });
 

@@ -2,11 +2,11 @@
 
 ## Overview
 
-FX Watchdog is a web service designed to extract foreign exchange (FX) rate information from uploaded images. It leverages Google's Generative AI (Gemini) to analyze image content and return structured data. The application features a role-based access control system with three user tiers (SuperAdmin, Admin, Ops User) and logs key actions for auditing purposes.
+FX Watchdog is a web service designed to extract foreign exchange (FX) rate information from uploaded images. It leverages Google's Generative AI (Gemini) to analyze image content and return structured data. The application features a role-based access control system with three user tiers (SuperAdmin, Admin, Ops User) and logs key actions for auditing purposes. This project has undergone significant refactoring to improve code quality, maintainability, and performance, and now includes enhanced features for data management and user interaction.
 
 ## Features
 
-- **AI-Powered Data Extraction**: Uses Google's Gemini model to extract FX rates and other details from images.
+- **AI-Powered Data Extraction**: Uses Google's Gemini model to extract FX rates and other details from images. Now uses system date/time for primary records, with AI-extracted data for reference.
 - **Role-Based Access Control (RBAC)**:
   - **SuperAdmin**: Manages Admin users.
   - **Admin**: Manages Ops Users.
@@ -14,6 +14,10 @@ FX Watchdog is a web service designed to extract foreign exchange (FX) rate info
 - **Secure Authentication**: Employs JSON Web Tokens (JWT) for securing API endpoints.
 - **Password Management**: Includes a temporary password system that requires users to change their password upon first login.
 - **Audit Trail**: Logs important user actions, suchs as image uploads and rate savings.
+- **Upload History**: Users can view their past uploads.
+- **Latest Upload Access**: Easily retrieve the most recent upload details.
+- **Discard Last Upload**: Functionality to mark the last uploaded item as rejected.
+- **Dynamic Branch Management**: Branches are now dynamically managed via the database, allowing for flexible addition and removal.
 
 ## Technology Stack
 
@@ -22,7 +26,10 @@ FX Watchdog is a web service designed to extract foreign exchange (FX) rate info
 - **AI Service**: Google Generative AI (`@google/generative-ai`)
 - **Authentication**: JSON Web Tokens (JWT), bcryptjs
 - **File Handling**: Multer
-- **Environment Variables**: Dotenv
+- **Environment Variables**: Centralized `config` module
+- **Logging**: Winston
+- **Code Quality**: ESLint, Prettier
+- **Testing**: Jest
 - **Containerization**: Docker, Docker Compose
 
 ## Setup and Installation
@@ -110,9 +117,15 @@ To test the API, use the provided Postman collection:
    - **Login as Admin**: Use the `Auth > 1. Login` request with the new Admin's credentials.
    - **Create an Ops User**: Use the `User Management > 2. Admin - Create Ops User` request.
 
-**4. Image Upload Workflow:**
+**4. Image/Text Upload Workflow:**
    - **Login as Ops User**: Use the `Auth > 1. Login` request with the new Ops User's credentials.
-   - **Change Temporary Password**: Use the `Auth > 2. Change Password` request to set a new password. This request now returns `success: true` on success.
-   - **Upload Image**: Use the `Ops User Workflow > 1. Upload Image (Protected)` request. Attach an image file to the `image` key in the form-data body.
+   - **Change Temporary Password**: Use the `Auth > 2. Change Password` request to set a new password.
+   - **Upload Image/Text**: Use `Ops User Workflow > Step 1a: Upload Image for Extraction` or `Step 1b: Upload Text for Extraction`. Attach an image file to the `image` key in the form-data body or provide text in the raw body.
 
-The API will process the image and return the extracted FX rates in the response.
+**5. New Features & Endpoints:**
+   - **Get Upload History**: Use `Ops User Workflow > Get Upload History` to view a paginated list of your past uploads.
+   - **Get Latest Upload**: Use `Ops User Workflow > Get Latest Upload` to retrieve details of your most recent upload.
+   - **Discard Last Upload**: Use `Ops User Workflow > Discard Last Upload` (DELETE request) to mark your last upload as rejected.
+   - **Branch Management**: Use the `Branch Management` folder to create, retrieve, and delete branches dynamically. This allows for flexible management of branch names without code changes.
+
+The API will process the image/text and return the extracted FX rates in the response.
