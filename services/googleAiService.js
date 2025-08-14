@@ -1,70 +1,83 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const fs = require("fs");
-const path = require("path");
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const fs = require('fs');
+const path = require('path');
+const config = require('../config');
+const logger = require('../utils/logger');
 
 // --- Start of Standardization Helpers ---
 
 // Load currency map from JSON file
-const currencyMap = JSON.parse(fs.readFileSync(path.join(__dirname, '../all-currencies.json'), 'utf8'));
+const currencyMap = JSON.parse(
+  fs.readFileSync(path.join(__dirname, '../all-currencies.json'), 'utf8')
+);
 
 function standardizeDateTime(data) {
+  const processedData = { ...data };
+
   // Standardize Date
-  if (data.date) {
+  if (processedData.date) {
     try {
       // Handles formats like DD.MM.YY, DD/MM/YY, YYYY-MM-DD etc.
-      const parts = data.date.match(/(\d+)/g);
+      const parts = processedData.date.match(/(\d+)/g);
       if (parts && parts.length === 3) {
         let year = parseInt(parts[2], 10);
-        let month = parseInt(parts[1], 10) - 1;
-        let day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[0], 10);
 
-        if (String(year).length === 2) { // Handle YY format
+        if (String(year).length === 2) {
+          // Handle YY format
           year += 2000;
         }
-        
+
         const date = new Date(Date.UTC(year, month, day));
-        data.date = date.toISOString().split('T')[0];
+        [processedData.date] = date.toISOString().split('T');
       } else {
-        console.warn(`Could not parse date: ${data.date}. Leaving as is.`);
+        logger.warn(
+          `Could not parse date: ${processedData.date}. Leaving as is.`
+        );
       }
     } catch (e) {
-      console.warn(`Could not parse date: ${data.date}. Leaving as is.`);
+      logger.warn(
+        `Could not parse date: ${processedData.date}. Leaving as is.`
+      );
     }
   }
 
   // Standardize Time
-  if (data.time) {
+  if (processedData.time) {
     try {
-      const timeMatch = data.time.match(/(\d{1,2}):(\d{2})/);
+      const timeMatch = processedData.time.match(/(\d{1,2}):(\d{2})/);
       if (timeMatch) {
         const hours = timeMatch[1].padStart(2, '0');
         const minutes = timeMatch[2];
-        data.time = `${hours}:${minutes}`;
+        processedData.time = `${hours}:${minutes}`;
       }
     } catch (e) {
-      console.warn(`Could not parse time: ${data.time}. Leaving as is.`);
+      logger.warn(
+        `Could not parse time: ${processedData.time}. Leaving as is.`
+      );
     }
   }
-  return data;
+  return processedData;
 }
 // --- End of Standardization Helpers ---
 
 // Get your API key from environment variables
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const genAI = new GoogleGenerativeAI(config.googleApiKey);
 
 // Function to convert a file to a generative part
-function fileToGenerativePart(path, mimeType) {
+function fileToGenerativePart(filePath, mimeType) {
   return {
     inlineData: {
-      data: Buffer.from(fs.readFileSync(path)).toString("base64"),
-      mimeType
+      data: Buffer.from(fs.readFileSync(filePath)).toString('base64'),
+      mimeType,
     },
   };
 }
 
 async function getAiExtraction(imagePath, branchName) {
   // For text-and-image input, use the gemini-pro-vision model
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
 
   const currencyMapString = JSON.stringify(currencyMap, null, 2);
 
@@ -102,14 +115,17 @@ async function getAiExtraction(imagePath, branchName) {
     Return only the JSON object.
   `;
 
-  const imagePart = fileToGenerativePart(imagePath, "image/jpeg");
+  const imagePart = fileToGenerativePart(imagePath, 'image/jpeg');
 
   const result = await model.generateContent([prompt, imagePart]);
   const response = await result.response;
   const text = response.text();
-  
+
   // Clean the response to ensure it's valid JSON
-  const cleanedText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+  const cleanedText = text
+    .replace(/```json/g, '')
+    .replace(/```/g, '')
+    .trim();
 
   try {
     let parsedData = JSON.parse(cleanedText);
@@ -117,9 +133,9 @@ async function getAiExtraction(imagePath, branchName) {
     parsedData = standardizeDateTime(parsedData);
     return parsedData;
   } catch (e) {
-    console.error("Error parsing JSON from AI response:", e);
-    console.error("Raw response:", cleanedText);
-    throw new Error("Failed to parse AI response as JSON.");
+    logger.error('Error parsing JSON from AI response:', e);
+    logger.error('Raw response:', cleanedText);
+    throw new Error('Failed to parse AI response as JSON.');
   }
 }
 
