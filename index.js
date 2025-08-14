@@ -1,26 +1,25 @@
-
-require('dotenv').config();
-require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const bcrypt = require('bcryptjs');
+const User = require('./models/user');
+const config = require('./config');
+const logger = require('./utils/logger');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = config.port;
 
 app.use(bodyParser.json());
 app.use(cors());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+mongoose
+  .connect(config.mongoURI)
   .then(() => {
-    console.log('MongoDB connected');
+    logger.info('MongoDB connected');
     // Create SuperAdmin if not exists
     const createSuperAdmin = async () => {
-      const User = require('./models/user');
-      const bcrypt = require('bcryptjs');
       const superAdminUsername = 'SuperAdmin';
       const superAdminEmail = 'superadmin@example.com';
       const superAdminPassword = 'Password123';
@@ -34,26 +33,39 @@ mongoose.connect(process.env.MONGODB_URI)
           email: superAdminEmail,
           password: hashedPassword,
           role: 'SuperAdmin',
-          isTemporaryPassword: false // SuperAdmin does not have a temporary password
+          isTemporaryPassword: false, // SuperAdmin does not have a temporary password
         });
         await superAdmin.save();
-        console.log('SuperAdmin created.');
+        logger.info('SuperAdmin created.');
       }
     };
     createSuperAdmin();
   })
-  .catch(err => console.log(err));
+  .catch((err) => logger.error(err));
 
 // Routes
 app.use('/api/users', require('./routes/users'));
 app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/submit', require('./routes/submit'));
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/branches', require('./routes/branches'));
 
 app.get('/', (req, res) => {
   res.send('FX Watchdog API');
 });
 
+// Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  if (mongoose.connection.readyState === 1) {
+    res.status(200).json({ status: 'UP', message: 'Database connected' });
+  } else {
+    res.status(500).json({ status: 'DOWN', message: 'Database disconnected' });
+  }
+});
+
+// Error Handling Middleware
+app.use(require('./middleware/errorHandler'));
+
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  logger.info(`Server is running on port ${port}`);
 });

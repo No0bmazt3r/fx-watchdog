@@ -1,10 +1,11 @@
-
 const express = require('express');
+
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const auth = require('../middleware/auth');
+const config = require('../config');
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
@@ -12,7 +13,7 @@ router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    let user = await User.findOne({ username });
+    const user = await User.findOne({ username });
     if (!user) {
       return res.status(400).json({ msg: 'Invalid credentials' });
     }
@@ -25,13 +26,13 @@ router.post('/login', async (req, res) => {
     const payload = {
       user: {
         id: user.id,
-        role: user.role
-      }
+        role: user.role,
+      },
     };
 
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      config.jwtSecret,
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
@@ -41,14 +42,13 @@ router.post('/login', async (req, res) => {
           user: {
             id: user.id,
             username: user.username,
-            role: user.role
-          }
+            role: user.role,
+          },
         });
       }
     );
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    next(err);
   }
 });
 
@@ -58,7 +58,9 @@ router.post('/change-password', auth, async (req, res) => {
   const { newPassword } = req.body;
 
   if (!newPassword || newPassword.length < 6) {
-    return res.status(400).json({ msg: 'Password must be at least 6 characters long.' });
+    return res
+      .status(400)
+      .json({ msg: 'Password must be at least 6 characters long.' });
   }
 
   try {
@@ -78,8 +80,7 @@ router.post('/change-password', auth, async (req, res) => {
 
     res.json({ msg: 'Password updated successfully', success: true });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    next(err);
   }
 });
 
