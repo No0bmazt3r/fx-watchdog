@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "a8a1b3a3-1b3c-4c3e-8b1a-9e8e1f1d0c2c",
-		"name": "FX Watchdog API - Final",
+		"name": "FX Watchdog API - added batch_rates",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -58,9 +58,9 @@
 									"    console.error('Error parsing login response:', e);",
 									"}"
 								]
+								}
 							}
-						}
-					]
+						]
 				},
 				{
 					"name": "Change Password",
@@ -78,7 +78,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"newPassword\": \"a_strong_password\"\n}"
+							"raw": "{\n  \"newPassword\": \"YourNewStrongPassword123!\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/change-password",
@@ -140,7 +140,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"new_user_name\",\n  \"email\": \"user@example.com\",\n  \"password\": \"temporary_password\",\n  \"role\": \"Admin\",\n  \"branch\": \"(Required for Ops User only)\"\n}"
+							"raw": "{\n  \"username\": \"new_admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"temporary_password\",\n  \"role\": \"Admin\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -259,7 +259,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"New Branch Name\"\n}"
+							"raw": "{\n  \"name\": \"Main Branch\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/branches",
@@ -375,30 +375,30 @@
 								},
 								"description": "Uploads an image and branch name. The API returns extracted data with a 'Pending' status."
 							},
-							"response": [],
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"try {",
-											"    let jsonData = pm.response.json();",
-											"    if (jsonData && jsonData.uploadId) {",
-											"        pm.environment.set('uploadId', jsonData.uploadId);",
-											"        console.log('Upload ID saved:', jsonData.uploadId);",
-											"    }",
-											"    if (jsonData && jsonData.tempFileId) {",
-											"        pm.environment.set('tempFileId', jsonData.tempFileId);",
-											"        console.log('Temp File ID saved:', jsonData.tempFileId);",
-											"    }",
-											"} catch (e) {",
-											"    console.error('Error parsing upload response:', e);",
-											"}"
-										]
-									}
+						"response": [],
+						"event": [
+							{
+								"listen": "test",
+								"script": {
+									"type": "text/javascript",
+									"exec": [
+										"try {",
+										"    let jsonData = pm.response.json();",
+										"    if (jsonData && jsonData.uploadId) {",
+										"        pm.environment.set('uploadId', jsonData.uploadId);",
+										"        console.log('Upload ID saved:', jsonData.uploadId);",
+									"    }",
+									"    if (jsonData && jsonData.tempFileId) {",
+									"        pm.environment.set('tempFileId', jsonData.tempFileId);",
+									"        console.log('Temp File ID saved:', jsonData.tempFileId);",
+									"    }",
+									"} catch (e) {",
+									"    console.error('Error parsing upload response:', e);",
+									"}"
+									]
 								}
-							]
+							}
+						]
 						},
 						{
 							"name": "Step 1b: Upload Text for Extraction",
@@ -430,31 +430,31 @@
 								},
 								"description": "Uploads raw text for extraction. The API returns extracted data with a 'Pending' status."
 							},
-							"response": [],
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"type": "text/javascript",
-										"exec": [
-											"try {",
-											"    let jsonData = pm.response.json();",
-											"    if (jsonData && jsonData.uploadId) {",
-											"        pm.environment.set('uploadId', jsonData.uploadId);",
-											"        console.log('Upload ID saved:', jsonData.uploadId);",
-											"    }",
-											"    if (jsonData && jsonData.tempFileId) {",
-											"        pm.environment.set('tempFileId', jsonData.tempFileId);",
-											"        console.log('Temp File ID saved:', jsonData.tempFileId);",
-											"    }",
-											"} catch (e) {",
-											"    console.error('Error parsing upload response:', e);",
-											"}"
-										]
-									}
+						"response": [],
+						"event": [
+							{
+								"listen": "test",
+								"script": {
+									"type": "text/javascript",
+									"exec": [
+										"try {",
+										"    let jsonData = pm.response.json();",
+										"    if (jsonData && jsonData.uploadId) {",
+										"        pm.environment.set('uploadId', jsonData.uploadId);",
+										"        console.log('Upload ID saved:', jsonData.uploadId);",
+									"    }",
+									"    if (jsonData && jsonData.tempFileId) {",
+									"        pm.environment.set('tempFileId', jsonData.tempFileId);",
+									"        console.log('Temp File ID saved:', jsonData.tempFileId);",
+									"    }",
+									"} catch (e) {",
+									"    console.error('Error parsing upload response:', e);",
+									"}"
+									]
 								}
-							]
-						},
+							}
+						]
+							},
 						{
 							"name": "Step 2: Submit Verified Data",
 							"request": {
@@ -471,7 +471,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"tempFileId\": \"{{tempFileId}}\",\n  \"uploadId\": \"{{uploadId}}\",\n  \"extractedData\": {\n    \"date\": \"2025-07-29\",\n    \"time\": \"09:30\",\n    \"branch\": \"Main Branch\",\n    \"rates\": {\n      \"IDR\": 3847.76,\n      \"PHP\": 13.51\n    }\n  }\n}"
+									"raw": "{\n  \"tempFileId\": \"{{tempFileId}}\",\n  \"uploadId\": \"{{uploadId}}\",\n  \"extractedData\": {\n    \"date\": \"2025-08-15\",\n    \"time\": \"10:00\",\n    \"branch\": \"Main Branch\",\n    \"rates\": {\n      \"USD\": 4.75,\n      \"EUR\": 5.10,\n      \"GBP\": 5.90\n    }\n  }\n}"
 								},
 								"url": {
 									"raw": "{{base_url}}/api/submit",
@@ -485,94 +485,94 @@
 								},
 								"description": "Submits the verified data. The body can be the direct response from the upload endpoint. On success, the upload status is changed to 'Completed'."
 							},
-							"response": []
-						},
-						{
-							"name": "Get Upload History",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "x-auth-token",
-										"value": "{{authToken}}"
-									}
+						"response": []
+					},
+					{
+						"name": "Get Upload History",
+						"request": {
+							"method": "GET",
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
+							"url": {
+								"raw": "{{base_url}}/api/uploads/history?page=1&limit=10",
+								"host": [
+									"{{base_url}}"
 								],
-								"url": {
-									"raw": "{{base_url}}/api/uploads/history?page=1&limit=10",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"uploads",
-										"history"
-									],
-									"query": [
-										{
-											"key": "page",
-											"value": "1"
-										},
-										{
-											"key": "limit",
-											"value": "10"
-										}
-									]
-								},
-								"description": "Retrieves a paginated list of upload history for the authenticated user."
-							},
-							"response": []
-						},
-						{
-							"name": "Get Latest Upload",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "x-auth-token",
-										"value": "{{authToken}}"
-									}
+								"path": [
+									"api",
+									"uploads",
+									"history"
 								],
-								"url": {
-									"raw": "{{base_url}}/api/uploads/latest",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"uploads",
-										"latest"
-									]
-								},
-								"description": "Retrieves the latest upload for the authenticated user."
-							},
-							"response": []
-						},
-						{
-							"name": "Discard Last Upload",
-							"request": {
-								"method": "DELETE",
-								"header": [
+								"query": [
 									{
-										"key": "x-auth-token",
-										"value": "{{authToken}}"
+										"key": "page",
+										"value": "1"
+									},
+									{
+										"key": "limit",
+										"value": "10"
 									}
-								],
-								"url": {
-									"raw": "{{base_url}}/api/uploads/last",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"uploads",
-										"last"
-									]
-								},
-								"description": "Discards (marks as Rejected) the last uploaded item for the authenticated user."
+								]
 							},
-							"response": []
-						}
-					]
+							"description": "Retrieves a paginated list of upload history for the authenticated user."
+						},
+						"response": []
+					},
+					{
+						"name": "Get Latest Upload",
+						"request": {
+							"method": "GET",
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
+							"url": {
+								"raw": "{{base_url}}/api/uploads/latest",
+								"host": [
+									"{{base_url}}"
+								],
+								"path": [
+									"api",
+									"uploads",
+									"latest"
+								]
+							},
+							"description": "Retrieves the latest upload for the authenticated user."
+						},
+						"response": []
+					},
+					{
+						"name": "Discard Last Upload",
+						"request": {
+							"method": "DELETE",
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
+							"url": {
+								"raw": "{{base_url}}/api/uploads/last",
+								"host": [
+									"{{base_url}}"
+								],
+								"path": [
+									"api",
+									"uploads",
+									"last"
+								]
+							},
+							"description": "Discards (marks as Rejected) the last uploaded item for the authenticated user."
+						},
+						"response": []
+					}
+				]
 				},
 				{
 					"name": "Admin Workflow",
@@ -613,94 +613,137 @@
 								},
 								"description": "Retrieves a paginated list of all uploads. Can be filtered by status."
 							},
-							"response": []
-						},
-						{
-							"name": "Get Specific Upload",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "x-auth-token",
-										"value": "{{authToken}}"
-									}
+						"response": []
+					},
+					{
+						"name": "Get Specific Upload",
+						"request": {
+							"method": "GET",
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
+							"url": {
+								"raw": "{{base_url}}/api/uploads/{{uploadId}}",
+								"host": [
+									"{{base_url}}"
 								],
-								"url": {
-									"raw": "{{base_url}}/api/uploads/{{uploadId}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"uploads",
-										"{{uploadId}}"
-									]
-								},
-								"description": "Retrieves a specific upload by its ID. Uses uploadId environment variable."
+								"path": [
+									"api",
+									"uploads",
+									"{{uploadId}}"
+								]
 							},
-							"response": []
+							"description": "Retrieves a specific upload by its ID. Uses uploadId environment variable."
 						},
-						{
-							"name": "Update Upload Status",
-							"request": {
-								"method": "PATCH",
-								"header": [
-									{
-										"key": "Content-Type",
-										"value": "application/json"
-									},
-									{
-										"key": "x-auth-token",
-										"value": "{{authToken}}"
-									}
-								],
-								"body": {
-									"mode": "raw",
-									"raw": "{\n  \"status\": \"Rejected\"\n}"
+						"response": []
+					},
+					{
+						"name": "Update Upload Status",
+						"request": {
+							"method": "PATCH",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
 								},
-								"url": {
-									"raw": "{{base_url}}/api/uploads/{{uploadId}}/status",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"uploads",
-										"{{uploadId}}",
-										"status"
-									]
-								},
-								"description": "Updates the status of a specific upload. Allowed values: Pending, Completed, Rejected. Uses uploadId environment variable."
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
+							"body": {
+								"mode": "raw",
+								"raw": "{\n  \"status\": \"Rejected\"\n}"
 							},
-							"response": []
+							"url": {
+								"raw": "{{base_url}}/api/uploads/{{uploadId}}/status",
+								"host": [
+									"{{base_url}}"
+								],
+								"path": [
+									"api",
+									"uploads",
+									"{{uploadId}}",
+									"status"
+								]
+							},
+							"description": "Updates the status of a specific upload. Allowed values: Pending, Completed, Rejected. Uses uploadId environment variable."
 						},
-						{
-							"name": "Retrieve Uploaded Image",
-							"request": {
-								"method": "GET",
-								"header": [
-									{
-										"key": "x-auth-token",
-										"value": "{{authToken}}"
-									}
+						"response": []
+					},
+					{
+						"name": "Retrieve Uploaded Image",
+						"request": {
+							"method": "GET",
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
+							"url": {
+								"raw": "{{base_url}}/api/uploads/image/{{uploadId}}",
+								"host": [
+									"{{base_url}}"
 								],
-								"url": {
-									"raw": "{{base_url}}/api/uploads/image/{{uploadId}}",
-									"host": [
-										"{{base_url}}"
-									],
-									"path": [
-										"api",
-										"uploads",
-										"image",
-										"{{uploadId}}"
-									]
-								},
-								"description": "Retrieves a previously uploaded image by its upload ID. Uses uploadId environment variable."
+								"path": [
+									"api",
+									"uploads",
+									"image",
+									"{{uploadId}}"
+								]
 							},
-							"response": []
-						}
-					]
+							"description": "Retrieves a previously uploaded image by its upload ID. Uses uploadId environment variable."
+						},
+						"response": []
+					}
+				]
+				}
+			]
+		},
+		{
+			"name": "5. Batch Rates",
+			"item": [
+				{
+					"name": "Get Batch Rates",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/batch-rates?date=2025-08-15&batch=Morning",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"batch-rates"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2025-08-15",
+									"description": "(Optional) Filter by date in YYYY-MM-DD format.",
+									"disabled": true
+								},
+								{
+									"key": "batch",
+									"value": "Morning",
+									"description": "(Optional) Filter by batch name: \"Morning\" or \"Afternoon\".",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Retrieves batch rates. Can be filtered by date (YYYY-MM-DD) and/or batch name (Morning, Afternoon). Requires Admin or SuperAdmin privileges."
+					},
+					"response": []
 				}
 			]
 		}

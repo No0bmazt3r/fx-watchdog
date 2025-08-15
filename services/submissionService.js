@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const Upload = require('../models/upload');
 const ExchangeRate = require('../models/exchangeRate');
 const Audit = require('../models/audit');
+const { processAndSaveBatchRates } = require('./rateProcessorService');
+const logger = require('../utils/logger');
 
 const submitExtractedData = async (submissionData, user) => {
   const { uploadId, extractedData } = submissionData;
@@ -57,6 +59,11 @@ const submitExtractedData = async (submissionData, user) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    // Asynchronously trigger batch processing. No need to wait for it.
+    processAndSaveBatchRates().catch(err => {
+      logger.error('Error during background batch processing:', err);
+    });
 
     return { upload, savedRates };
   } catch (error) {
