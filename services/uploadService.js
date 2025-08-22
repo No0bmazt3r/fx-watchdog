@@ -2,6 +2,8 @@ const fs = require('fs');
 const Upload = require('../models/upload');
 const Audit = require('../models/audit');
 const { getOcrExtraction, getTextExtraction } = require('./aiService');
+const logger = require('../utils/logger');
+const { processAndSaveBatchRates } = require('./rateProcessorService');
 
 const processUpload = async (file, body, user) => {
   if (user.isTemporaryPassword) {
@@ -134,6 +136,12 @@ const updateUploadStatus = async (id, status, message, user) => {
     details: `Upload ${upload.filename} status changed to ${status} by ${user.username}. Message: ${message || 'None'}`,
   });
   await audit.save();
+
+  if (status === 'Approved') {
+    processAndSaveBatchRates().catch(err => {
+      logger.error('Error during background batch processing:', err);
+    });
+  }
 
   return upload;
 };

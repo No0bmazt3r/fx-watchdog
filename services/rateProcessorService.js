@@ -26,10 +26,27 @@ function getBatchName(timeString) {
  * The results are then saved or updated in the BatchRate collection.
  */
 async function processAndSaveBatchRates() {
-  logger.info('Starting batch rate processing...');
+  logger.info('Starting batch rate processing for approved uploads...');
 
   try {
-    const allRates = await ExchangeRate.find({});
+    const allRates = await ExchangeRate.aggregate([
+      {
+        $lookup: {
+          from: 'uploads', // The name of the Upload collection
+          localField: 'upload',
+          foreignField: '_id',
+          as: 'uploadDetails',
+        },
+      },
+      {
+        $unwind: '$uploadDetails',
+      },
+      {
+        $match: {
+          'uploadDetails.status': 'Approved',
+        },
+      },
+    ]);
     const allBranchNames = (await Branch.find({})).map(b => b.name);
     const totalBranches = allBranchNames.length;
 
