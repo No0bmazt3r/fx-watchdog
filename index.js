@@ -49,7 +49,7 @@ app.use('/api/uploads', require('./routes/uploads'));
 app.use('/api/submit', require('./routes/submit'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/branches', require('./routes/branches'));
-app.use('/api/batch-rates', require('./routes/batchRates'));
+app.use('/api/rates', require('./routes/rates'));
 
 app.get('/', (req, res) => {
   res.send('FX Watchdog API');

@@ -2,22 +2,21 @@
 
 ## Overview
 
-FX Watchdog is a web service designed to extract foreign exchange (FX) rate information from uploaded images. It leverages Google's Generative AI (Gemini) to analyze image content and return structured data. The application features a role-based access control system with three user tiers (SuperAdmin, Admin, Ops User) and logs key actions for auditing purposes. This project has undergone significant refactoring to improve code quality, maintainability, and performance, and now includes enhanced features for data management and user interaction.
+FX Watchdog is a web service designed to extract foreign exchange (FX) rate information from uploaded images and text. It leverages Google's Generative AI (Gemini) to analyze content and return structured data. The application features a role-based access control system (SuperAdmin, Admin, Ops User), comprehensive auditing, and a full suite of API endpoints for managing users, branches, and submissions.
+
+This project has been significantly refactored for optimal code quality, maintainability, and performance.
 
 ## Features
 
-- **AI-Powered Data Extraction**: Uses Google's Gemini model to extract FX rates and other details from images. Now uses system date/time for primary records, with AI-extracted data for reference.
-- **Role-Based Access Control (RBAC)**:
-  - **SuperAdmin**: Manages Admin users.
-  - **Admin**: Manages Ops Users.
-  - **Ops User**: Uploads images for processing.
-- **Secure Authentication**: Employs JSON Web Tokens (JWT) for securing API endpoints.
-- **Password Management**: Includes a temporary password system that requires users to change their password upon first login.
-- **Audit Trail**: Logs important user actions, suchs as image uploads and rate savings.
-- **Upload History**: Users can view their past uploads.
-- **Latest Upload Access**: Easily retrieve the most recent upload details.
-- **Discard Last Upload**: Functionality to mark the last uploaded item as rejected.
-- **Dynamic Branch Management**: Branches are now dynamically managed via the database, allowing for flexible addition and removal.
+- **AI-Powered Data Extraction**: Uses Google's Gemini model to extract FX rates from images or text.
+- **Secure Authentication**: Employs JSON Web Tokens (JWT) for securing API endpoints, including a temporary password system for new users.
+- **Role-Based Access Control (RBAC)**: Granular permissions for SuperAdmins, Admins, and Ops Users.
+- **Full Audit Trail**: Logs all significant user actions for security and tracking.
+- **Dynamic Branch Management**: API endpoints to dynamically create, view, and delete branches.
+- **Comprehensive Upload Management**: Users can view their upload history, retrieve the latest upload, and discard their last submission.
+- **Automated Rate Processing**: A background service processes submitted rates to determine the lowest and highest rates for each currency across branches.
+
+---
 
 ## Technology Stack
 
@@ -26,106 +25,128 @@ FX Watchdog is a web service designed to extract foreign exchange (FX) rate info
 - **AI Service**: Google Generative AI (`@google/generative-ai`)
 - **Authentication**: JSON Web Tokens (JWT), bcryptjs
 - **File Handling**: Multer
-- **Environment Variables**: Centralized `config` module
 - **Logging**: Winston
 - **Code Quality**: ESLint, Prettier
 - **Testing**: Jest
 - **Containerization**: Docker, Docker Compose
 
-## Setup and Installation
+---
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository_url>
-    cd fx-watchdog
-    ```
+## Project Setup
 
-2.  **Install Node.js dependencies:**
-    ```bash
-    npm install
-    ```
+### Prerequisites
 
-3.  **Set up environment variables:**
-    Create a `.env` file in the root of the project and add the following variables. Replace the placeholder values with your actual credentials and desired settings.
+- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- [Docker](https://www.docker.com/products/docker-desktop/) and Docker Compose
+- A MongoDB database instance
 
-    ```env
-    PORT=3000
-    MONGODB_URI="YOUR_MONGO_DB"
-    JWT_SECRET=your_jwt_secret
-    GOOGLE_API_KEY=YOUR_GEMINI_KEY
-    ```
+### 1. Installation
 
-4.  **Install Docker and Docker Compose:**
-    Ensure you have [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running on your system. This includes Docker Compose.
+Clone the repository and install the dependencies.
 
-## Dockerization
+```bash
+git clone <repository_url>
+cd fx-watchdog
+npm install
+```
 
-The application is set up for Dockerization using a `Dockerfile` and `docker-compose.yml`.
+### 2. Environment Configuration
 
--   **`Dockerfile`**: Defines the steps to build the Docker image for your Node.js application.
--   **`.dockerignore`**: Specifies files and directories to exclude from the Docker build context, keeping the image size optimized.
--   **`docker-compose.yml`**: Orchestrates the application service, allowing you to build and run your container with simple commands.
+Create a `.env` file in the project root and add the following variables:
 
-## Running the Application with Docker Compose
+```env
+# Server Configuration
+PORT=3000
 
-This is the recommended way to run the application, as it encapsulates all dependencies within Docker containers.
+# Database
+MONGODB_URI="YOUR_MONGO_DB_CONNECTION_STRING"
 
-1.  **Ensure Docker Desktop is running.**
+# Security
+JWT_SECRET=your_super_secret_and_long_jwt_key
 
-2.  **Build the Docker image (first time or after code changes):**
-    If this is your first time running the application with Docker Compose, or if you have made changes to your application code (e.g., `index.js`, `package.json`, `services/` files) or the `Dockerfile` itself, you need to rebuild the image:
-    ```bash
-    docker-compose up --build
-    ```
-    This command will build the `fx-watchdog-app` image and then start the container.
+# Google AI
+GOOGLE_API_KEY=YOUR_GEMINI_API_KEY
+```
 
-3.  **Start the application (after initial build):**
-    Once the image has been built, you can simply start the container without rebuilding it. This is faster for subsequent runs:
-    ```bash
-    docker-compose up
-    ```
-    Your application will start, and you should see logs indicating that the server is running on port 3000 and connected to MongoDB.
+### 3. Running the Application
 
-4.  **Stop the application:**
-    To stop the running container, press `Ctrl+C` in the terminal where `docker-compose up` is running.
+The recommended way to run the application is using Docker Compose.
 
-5.  **Stop and remove containers/networks (optional):**
-    If you want to stop the containers and remove the associated Docker resources (like networks), use:
-    ```bash
-    docker-compose down
-    ```
+```bash
+# Build and start the containers (first time or after changes)
+docker-compose up --build
 
-### Important Notes for Dockerized Environment:
+# Start the application (if already built)
+docker-compose up
+```
 
--   **MongoDB Accessibility**: Ensure your MongoDB database (specified in `MONGODB_URI` in `.env`) is accessible from within the Docker container. If your MongoDB is running on `localhost` on your host machine, you might need to change `localhost` in your `MONGODB_URI` to `host.docker.internal` (for Docker Desktop on Windows/Mac) to allow the container to reach it.
--   **Port Conflicts**: If you encounter an error like `Port is already in use`, ensure no other application (including a previously run `node index.js` process) is using port 3000 on your host machine.
+The API will be available at `http://localhost:3000`.
 
-## API Usage (Postman Workflow)
+### 4. Code Quality
 
-To test the API, use the provided Postman collection:
-`Resources/postman2/fx-watchdog-api.postman_collection.json`
+This project is configured with Prettier and ESLint. Use the following commands to maintain code quality:
 
-**1. Ensure the server is running via Docker Compose.**
+```bash
+# Format all code
+npm run format
 
-**2. Configure Postman:**
-   - Import the collection.
-   - Set a `base_url` variable in your Postman environment to `http://localhost:3000`.
+# Lint and automatically fix issues
+npm run lint -- --fix
+```
 
-**3. Authentication and User Setup:**
-   - **Login as SuperAdmin**: Use the `Auth > 1. Login` request with `SuperAdmin` credentials to get a token. The Postman script will automatically set `authToken`, `isTemporaryPassword`, `userId`, `username`, and `userRole` collection variables.
-   - **Create an Admin**: Use the `User Management > 1. SuperAdmin - Create Admin` request.
-   - **Login as Admin**: Use the `Auth > 1. Login` request with the new Admin's credentials.
-   - **Create an Ops User**: Use the `User Management > 2. Admin - Create Ops User` request.
+### 5. Running Tests
 
-**4. Image/Text Upload Workflow:**
-   - **Login as Ops User**: Use the `Auth > 1. Login` request with the new Ops User's credentials.
-   - **Change Temporary Password**: Use the `Auth > 2. Change Password` request to set a new password.
-   - **Upload Image/Text**: Use `Ops User Workflow > Step 1a: Upload Image for Extraction` or `Step 1b: Upload Text for Extraction`. Attach an image file to the `image` key in the form-data body or provide text in the raw body.
+Execute the test suite with Jest:
 
-**5. New Features & Endpoints:**
-   - **Get Upload History**: Use `Ops User Workflow > Get Upload History` to view a paginated list of your past uploads.
-   - **Get Latest Upload**: Use `Ops User Workflow > Get Latest Upload` to retrieve details of your most recent upload.
-   - **Discard Last Upload**: Use `Ops User Workflow > Discard Last Upload` (DELETE request) to mark your last upload as rejected.
-   - **Branch Management**: Use the `Branch Management` folder to create, retrieve, and delete branches dynamically. This allows for flexible management of branch names without code changes.
+```bash
+npm test
+```
 
-The API will process the image/text and return the extracted FX rates in the response.
+---
+
+## API Endpoints
+
+Below is a summary of the available API endpoints. All protected routes require a `Bearer Token` in the `Authorization` header.
+
+### Authentication
+
+| Method | Endpoint              | Description                               |
+| :----- | :-------------------- | :---------------------------------------- |
+| `POST` | `/api/auth/login`       | Authenticate a user and receive a JWT.    |
+| `POST` | `/api/auth/change-password` | (Authenticated) Change the logged-in user's password. |
+
+### User Management (Admin/SuperAdmin)
+
+| Method   | Endpoint                  | Description                                      |
+| :------- | :------------------------ | :----------------------------------------------- |
+| `GET`    | `/api/users`              | Get a list of all users.                         |
+| `POST`   | `/api/users`              | Create a new user (Admin or Ops User).           |
+| `PATCH`  | `/api/users/:id/password` | Change another user's password.                  |
+| `DELETE` | `/api/users/:id`          | Delete a user.                                   |
+
+### Branch Management (Admin/SuperAdmin)
+
+| Method   | Endpoint         | Description                   |
+| :------- | :--------------- | :---------------------------- |
+| `GET`    | `/api/branches`  | Get a list of all branches.   |
+| `POST`   | `/api/branches`  | Create a new branch.          |
+| `DELETE` | `/api/branches/:id` | Delete a branch.              |
+
+### Upload & Submission (Ops User)
+
+| Method   | Endpoint                   | Description                                       |
+| :------- | :------------------------- | :------------------------------------------------ |
+| `POST`   | `/api/uploads`             | Upload an image (`multipart/form-data`) or text (`application/json`) for AI extraction. |
+| `GET`    | `/api/uploads/history`     | Get the authenticated user's upload history.      |
+| `GET`    | `/api/uploads/latest`      | Get the most recent upload for the user.          |
+| `DELETE` | `/api/uploads/last`        | Mark the user's last upload as "Rejected".        |
+| `POST`   | `/api/submit`              | Submit the extracted data from an upload for processing. |
+
+### Upload Administration (Admin/SuperAdmin)
+
+| Method  | Endpoint                   | Description                                      |
+| :------ | :------------------------- | :----------------------------------------------- |
+| `GET`   | `/api/uploads`             | Get a paginated list of all uploads.             |
+| `GET`   | `/api/uploads/:id`         | Get details for a specific upload by ID.         |
+| `GET`   | `/api/uploads/image/:id`   | Retrieve the image file for a specific upload.   |
+| `PATCH` | `/api/uploads/:id/status`  | Update the status of an upload (e.g., Approved, Rejected). |
