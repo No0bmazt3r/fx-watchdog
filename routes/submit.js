@@ -26,19 +26,14 @@ router.post(
     }
 
     try {
-      const { upload, savedRates } = await submissionService.submitExtractedData(
-        req.body,
-        req.user
-      );
+      const { upload, savedRates } =
+        await submissionService.submitExtractedData(req.body, req.user);
 
       // Asynchronously delete the temporary file if it exists
       if (upload.path) {
         fs.unlink(upload.path, (err) => {
           if (err) {
-            console.error(
-              `Error deleting temporary file ${upload.path}:`,
-              err
-            );
+            console.error(`Error deleting temporary file ${upload.path}:`, err);
           }
         });
       }

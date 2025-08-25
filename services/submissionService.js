@@ -6,7 +6,7 @@ const logger = require('../utils/logger');
 
 const submitExtractedData = async (submissionData, user) => {
   const { uploadId, extractedData } = submissionData;
-  const { date, time, branch, rates, extraDetails } = extractedData; // These are AI extracted
+  const { branch, rates, extraDetails } = extractedData; // These are AI extracted
 
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -20,7 +20,9 @@ const submitExtractedData = async (submissionData, user) => {
     }
 
     if (upload.status === 'Completed') {
-      const err = new Error('This upload has already been submitted and completed.');
+      const err = new Error(
+        'This upload has already been submitted and completed.'
+      );
       err.statusCode = 400;
       throw err;
     }

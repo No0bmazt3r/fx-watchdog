@@ -9,7 +9,7 @@ const config = require('../config');
 
 // @route   POST /api/auth/login
 // @desc    Authenticate user & get token
-router.post('/login', async (req, res) => {
+router.post('/login', async (req, res, next) => {
   const { username, password } = req.body;
 
   try {
@@ -30,23 +30,18 @@ router.post('/login', async (req, res) => {
       },
     };
 
-    jwt.sign(
-      payload,
-      config.jwtSecret,
-      { expiresIn: 3600 },
-      (err, token) => {
-        if (err) throw err;
-        res.json({
-          token,
-          isTemporaryPassword: user.isTemporaryPassword,
-          user: {
-            id: user.id,
-            username: user.username,
-            role: user.role,
-          },
-        });
-      }
-    );
+    jwt.sign(payload, config.jwtSecret, { expiresIn: 3600 }, (err, token) => {
+      if (err) throw err;
+      res.json({
+        token,
+        isTemporaryPassword: user.isTemporaryPassword,
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+        },
+      });
+    });
   } catch (err) {
     next(err);
   }
@@ -54,7 +49,7 @@ router.post('/login', async (req, res) => {
 
 // @route   POST /api/auth/change-password
 // @desc    Change user password
-router.post('/change-password', auth, async (req, res) => {
+router.post('/change-password', auth, async (req, res, next) => {
   const { newPassword } = req.body;
 
   if (!newPassword || newPassword.length < 6) {

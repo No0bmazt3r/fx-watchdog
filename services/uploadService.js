@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs').promises;
 const Upload = require('../models/upload');
 const Audit = require('../models/audit');
 const { getOcrExtraction, getTextExtraction } = require('./aiService');
@@ -7,7 +7,9 @@ const { processAndSaveBatchRates } = require('./rateProcessorService');
 
 const processUpload = async (file, body, user) => {
   if (user.isTemporaryPassword) {
-    const err = new Error('Please change your temporary password before uploading.');
+    const err = new Error(
+      'Please change your temporary password before uploading.'
+    );
     err.statusCode = 403;
     throw err;
   }
@@ -23,27 +25,32 @@ const processUpload = async (file, body, user) => {
   let newUpload;
 
   if (file) {
-    // Image upload
-    const imageBuffer = fs.readFileSync(file.path);
-    const imageBase64 = imageBuffer.toString('base64');
+    try {
+      // Image upload
+      const imageBuffer = await fs.readFile(file.path);
+      const imageBase64 = imageBuffer.toString('base64');
 
-    newUpload = new Upload({
-      user: user.id,
-      filename: file.filename,
-      path: file.path,
-      imageData: imageBase64,
-      mimetype: file.mimetype,
-    });
-    await newUpload.save();
+      newUpload = new Upload({
+        user: user.id,
+        filename: file.filename,
+        path: file.path,
+        imageData: imageBase64,
+        mimetype: file.mimetype,
+      });
+      await newUpload.save();
 
-    const audit = new Audit({
-      user: user.id,
-      action: 'Upload Image for Review',
-      details: `Image ${file.filename} for branch ${branch} uploaded for review`,
-    });
-    await audit.save();
+      const audit = new Audit({
+        user: user.id,
+        action: 'Upload Image for Review',
+        details: `Image ${file.filename} for branch ${branch} uploaded for review`,
+      });
+      await audit.save();
 
-    extractedData = await getOcrExtraction(file, branch);
+      extractedData = await getOcrExtraction(file, branch);
+    } finally {
+      // Ensure the temporary file is deleted even if an error occurs
+      await fs.unlink(file.path);
+    }
   } else if (text) {
     // Text upload
     const textBase64 = Buffer.from(text).toString('base64');

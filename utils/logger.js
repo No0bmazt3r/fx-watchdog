@@ -12,11 +12,8 @@ const logger = createLogger({
   defaultMeta: { service: 'fx-watchdog-api' },
   transports: [
     new transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.simple()
-      )
-    })
+      format: format.combine(format.colorize(), format.simple()),
+    }),
     // Add other transports like File, MongoDB, etc. here for production
   ],
 });

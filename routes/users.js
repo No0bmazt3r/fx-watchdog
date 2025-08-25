@@ -44,7 +44,11 @@ router.patch(
           .json({ msg: 'Password must be at least 6 characters long.' });
       }
 
-      await userService.changeUserPassword(req.params.id, newPassword, req.user);
+      await userService.changeUserPassword(
+        req.params.id,
+        newPassword,
+        req.user
+      );
       res.json({ msg: 'User password updated successfully.' });
     } catch (err) {
       next(err);

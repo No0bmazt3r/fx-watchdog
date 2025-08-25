@@ -8,7 +8,7 @@ const config = require('./config');
 const logger = require('./utils/logger');
 
 const app = express();
-const port = config.port;
+const { port } = config;
 
 app.use(bodyParser.json());
 app.use(cors());

@@ -1,7 +1,7 @@
+const bcrypt = require('bcryptjs');
 const userService = require('../../services/userService');
 const User = require('../../models/user');
 const Audit = require('../../models/audit');
-const bcrypt = require('bcryptjs');
 
 // Mock Mongoose models
 jest.mock('../../models/user');
@@ -76,13 +76,17 @@ describe('userService', () => {
         branch: 'Main Branch',
       };
 
-      await expect(userService.createUser(userData, mockCreatingUser)).rejects.toThrow('User already exists');
+      await expect(
+        userService.createUser(userData, mockCreatingUser)
+      ).rejects.toThrow('User already exists');
       expect(User.findOne).toHaveBeenCalledWith({ username: 'existingUser' });
       expect(User.findOne).toHaveBeenCalledTimes(1);
     });
 
     it('should throw an error if email already exists', async () => {
-      User.findOne.mockResolvedValueOnce(null).mockResolvedValueOnce({ email: 'existing@example.com' });
+      User.findOne
+        .mockResolvedValueOnce(null)
+        .mockResolvedValueOnce({ email: 'existing@example.com' });
 
       const userData = {
         username: 'newUser',
@@ -92,9 +96,13 @@ describe('userService', () => {
         branch: 'Main Branch',
       };
 
-      await expect(userService.createUser(userData, mockCreatingUser)).rejects.toThrow('Email already exists');
+      await expect(
+        userService.createUser(userData, mockCreatingUser)
+      ).rejects.toThrow('Email already exists');
       expect(User.findOne).toHaveBeenCalledWith({ username: 'newUser' });
-      expect(User.findOne).toHaveBeenCalledWith({ email: 'existing@example.com' });
+      expect(User.findOne).toHaveBeenCalledWith({
+        email: 'existing@example.com',
+      });
       expect(User.findOne).toHaveBeenCalledTimes(2);
     });
 
@@ -107,7 +115,9 @@ describe('userService', () => {
         role: 'SuperAdmin',
       };
 
-      await expect(userService.createUser(userData, adminUser)).rejects.toThrow('Admins can only create Ops Users.');
+      await expect(userService.createUser(userData, adminUser)).rejects.toThrow(
+        'Admins can only create Ops Users.'
+      );
     });
 
     it('should throw an error if Ops User role is selected without branch', async () => {
@@ -119,20 +129,31 @@ describe('userService', () => {
         branch: '',
       };
 
-      await expect(userService.createUser(userData, mockCreatingUser)).rejects.toThrow('Branch is required for Ops Users.');
+      await expect(
+        userService.createUser(userData, mockCreatingUser)
+      ).rejects.toThrow('Branch is required for Ops Users.');
     });
   });
 
   describe('changeUserPassword', () => {
     const mockChangingUser = { id: 'adminId', role: 'SuperAdmin' };
-    const mockUserToUpdate = { id: 'userId', username: 'userToUpdate', role: 'Ops User', save: jest.fn() };
+    const mockUserToUpdate = {
+      id: 'userId',
+      username: 'userToUpdate',
+      role: 'Ops User',
+      save: jest.fn(),
+    };
 
     it('should change user password successfully', async () => {
       User.findById.mockResolvedValue(mockUserToUpdate);
       bcrypt.genSalt.mockResolvedValue('salt');
       bcrypt.hash.mockResolvedValue('hashedPassword');
 
-      await userService.changeUserPassword('userId', 'newPassword123', mockChangingUser);
+      await userService.changeUserPassword(
+        'userId',
+        'newPassword123',
+        mockChangingUser
+      );
 
       expect(User.findById).toHaveBeenCalledWith('userId');
       expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
@@ -146,7 +167,13 @@ describe('userService', () => {
     it('should throw an error if user to update is not found', async () => {
       User.findById.mockResolvedValue(null);
 
-      await expect(userService.changeUserPassword('nonExistentId', 'newPassword', mockChangingUser)).rejects.toThrow('User not found.');
+      await expect(
+        userService.changeUserPassword(
+          'nonExistentId',
+          'newPassword',
+          mockChangingUser
+        )
+      ).rejects.toThrow('User not found.');
     });
 
     it('should throw an error if Admin tries to change non-Ops User password', async () => {
@@ -154,7 +181,9 @@ describe('userService', () => {
       const userToUpdate = { id: 'userId', role: 'Admin' };
       User.findById.mockResolvedValue(userToUpdate);
 
-      await expect(userService.changeUserPassword('userId', 'newPassword', adminUser)).rejects.toThrow('Admins can only change Ops User passwords.');
+      await expect(
+        userService.changeUserPassword('userId', 'newPassword', adminUser)
+      ).rejects.toThrow('Admins can only change Ops User passwords.');
     });
 
     it('should throw an error if SuperAdmin tries to change another SuperAdmin password', async () => {
@@ -162,13 +191,22 @@ describe('userService', () => {
       const userToUpdate = { id: 'userId', role: 'SuperAdmin' };
       User.findById.mockResolvedValue(userToUpdate);
 
-      await expect(userService.changeUserPassword('userId', 'newPassword', superAdminUser)).rejects.toThrow("SuperAdmins cannot change another SuperAdmin's password.");
+      await expect(
+        userService.changeUserPassword('userId', 'newPassword', superAdminUser)
+      ).rejects.toThrow(
+        "SuperAdmins cannot change another SuperAdmin's password."
+      );
     });
   });
 
   describe('deleteUser', () => {
     const mockDeletingUser = { id: 'adminId', role: 'SuperAdmin' };
-    const mockUserToDelete = { id: 'userId', username: 'userToDelete', role: 'Ops User', remove: jest.fn() };
+    const mockUserToDelete = {
+      id: 'userId',
+      username: 'userToDelete',
+      role: 'Ops User',
+      remove: jest.fn(),
+    };
 
     it('should delete user successfully', async () => {
       User.findById.mockResolvedValue(mockUserToDelete);
@@ -183,7 +221,9 @@ describe('userService', () => {
     it('should throw an error if user to delete is not found', async () => {
       User.findById.mockResolvedValue(null);
 
-      await expect(userService.deleteUser('nonExistentId', mockDeletingUser)).rejects.toThrow('User not found');
+      await expect(
+        userService.deleteUser('nonExistentId', mockDeletingUser)
+      ).rejects.toThrow('User not found');
     });
 
     it('should throw an error if Admin tries to delete SuperAdmin', async () => {
@@ -191,7 +231,9 @@ describe('userService', () => {
       const userToDelete = { id: 'userId', role: 'SuperAdmin' };
       User.findById.mockResolvedValue(userToDelete);
 
-      await expect(userService.deleteUser('userId', adminUser)).rejects.toThrow('Admins can only delete Ops Users.');
+      await expect(userService.deleteUser('userId', adminUser)).rejects.toThrow(
+        'Admins can only delete Ops Users.'
+      );
     });
 
     it('should throw an error if non-SuperAdmin tries to delete SuperAdmin', async () => {
@@ -199,7 +241,9 @@ describe('userService', () => {
       const userToDelete = { id: 'userId', role: 'SuperAdmin' };
       User.findById.mockResolvedValue(userToDelete);
 
-      await expect(userService.deleteUser('userId', opsUser)).rejects.toThrow('Cannot delete a SuperAdmin.');
+      await expect(userService.deleteUser('userId', opsUser)).rejects.toThrow(
+        'Cannot delete a SuperAdmin.'
+      );
     });
   });
 });

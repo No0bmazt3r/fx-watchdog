@@ -7,7 +7,10 @@ const getUsers = async () => User.find().select('-password');
 const createUser = async (userData, creatingUser) => {
   const { username, email, password, role, branch } = userData;
 
-  if (creatingUser.role === 'Admin' && (role === 'SuperAdmin' || role === 'Admin')) {
+  if (
+    creatingUser.role === 'Admin' &&
+    (role === 'SuperAdmin' || role === 'Admin')
+  ) {
     const err = new Error('Admins can only create Ops Users.');
     err.statusCode = 403;
     throw err;
@@ -19,7 +22,7 @@ const createUser = async (userData, creatingUser) => {
     throw err;
   }
 
-  let user = await User.findOne({ username });
+  const user = await User.findOne({ username });
   if (user) {
     const err = new Error('User already exists');
     err.statusCode = 400;
@@ -64,7 +67,11 @@ const createUser = async (userData, creatingUser) => {
   return userToReturn;
 };
 
-const changeUserPassword = async (userIdToUpdate, newPassword, changingUser) => {
+const changeUserPassword = async (
+  userIdToUpdate,
+  newPassword,
+  changingUser
+) => {
   const userToUpdate = await User.findById(userIdToUpdate);
 
   if (!userToUpdate) {
@@ -79,8 +86,13 @@ const changeUserPassword = async (userIdToUpdate, newPassword, changingUser) => 
     throw err;
   }
 
-  if (changingUser.role === 'SuperAdmin' && userToUpdate.role === 'SuperAdmin') {
-    const err = new Error("SuperAdmins cannot change another SuperAdmin's password.");
+  if (
+    changingUser.role === 'SuperAdmin' &&
+    userToUpdate.role === 'SuperAdmin'
+  ) {
+    const err = new Error(
+      "SuperAdmins cannot change another SuperAdmin's password."
+    );
     err.statusCode = 403;
     throw err;
   }
@@ -118,7 +130,10 @@ const deleteUser = async (userIdToDelete, deletingUser) => {
     throw err;
   }
 
-  if (userToDelete.role === 'SuperAdmin' && deletingUser.role !== 'SuperAdmin') {
+  if (
+    userToDelete.role === 'SuperAdmin' &&
+    deletingUser.role !== 'SuperAdmin'
+  ) {
     const err = new Error('Cannot delete a SuperAdmin.');
     err.statusCode = 403;
     throw err;

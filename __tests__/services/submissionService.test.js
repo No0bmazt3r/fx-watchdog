@@ -1,8 +1,8 @@
+const mongoose = require('mongoose');
 const submissionService = require('../../services/submissionService');
 const Upload = require('../../models/upload');
 const ExchangeRate = require('../../models/exchangeRate');
 const Audit = require('../../models/audit');
-const mongoose = require('mongoose');
 
 // Mock Mongoose models
 jest.mock('../../models/upload');
@@ -49,7 +49,9 @@ describe('submissionService', () => {
         filename: 'test.jpg',
         save: jest.fn().mockResolvedValue(true),
       };
-      Upload.findById.mockReturnValue({ session: jest.fn().mockResolvedValue(mockUpload) });
+      Upload.findById.mockReturnValue({
+        session: jest.fn().mockResolvedValue(mockUpload),
+      });
       ExchangeRate.insertMany.mockResolvedValue([{}, {}]);
       Audit.prototype.save = jest.fn().mockResolvedValue(true);
 
@@ -72,7 +74,9 @@ describe('submissionService', () => {
     });
 
     it('should throw an error if upload record not found', async () => {
-      Upload.findById.mockReturnValue({ session: jest.fn().mockResolvedValue(null) });
+      Upload.findById.mockReturnValue({
+        session: jest.fn().mockResolvedValue(null),
+      });
 
       await expect(
         submissionService.submitExtractedData(mockSubmissionData, mockUser)
@@ -86,11 +90,15 @@ describe('submissionService', () => {
 
     it('should throw an error if upload status is already Completed', async () => {
       const mockUpload = { _id: mockUploadId, status: 'Completed' };
-      Upload.findById.mockReturnValue({ session: jest.fn().mockResolvedValue(mockUpload) });
+      Upload.findById.mockReturnValue({
+        session: jest.fn().mockResolvedValue(mockUpload),
+      });
 
       await expect(
         submissionService.submitExtractedData(mockSubmissionData, mockUser)
-      ).rejects.toThrow('This upload has already been submitted and completed.');
+      ).rejects.toThrow(
+        'This upload has already been submitted and completed.'
+      );
 
       expect(mongoose.startSession).toHaveBeenCalledTimes(1);
       expect(mockSession.startTransaction).toHaveBeenCalledTimes(1);

@@ -34,7 +34,6 @@ const getTextExtraction = async (text, branchName) => {
     extraDetails: [],
   };
 
-
   const dateRegex = /Date:(\d{2}\/d{2}\/d{4})/;
   const rateRegex = /^([A-Z .]{3,})\s*=\s*([\d.]*)$/;
   const branchRegex = /\*This rate is available only at (.+)\*/;

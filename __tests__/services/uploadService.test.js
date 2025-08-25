@@ -1,7 +1,7 @@
+const fs = require('fs');
 const uploadService = require('../../services/uploadService');
 const Upload = require('../../models/upload');
 const Audit = require('../../models/audit');
-const fs = require('fs');
 const aiService = require('../../services/aiService');
 
 // Mock Mongoose models
@@ -28,7 +28,9 @@ describe('uploadService', () => {
       const userWithTempPassword = { ...mockUser, isTemporaryPassword: true };
       await expect(
         uploadService.processUpload(null, mockBody, userWithTempPassword)
-      ).rejects.toThrow('Please change your temporary password before uploading.');
+      ).rejects.toThrow(
+        'Please change your temporary password before uploading.'
+      );
     });
 
     it('should throw an error if branch name is missing', async () => {
@@ -46,7 +48,7 @@ describe('uploadService', () => {
       };
       fs.readFileSync.mockReturnValue(Buffer.from('fakeImageData'));
 
-      Upload.prototype.save = jest.fn().mockImplementation(function () {
+      Upload.prototype.save = jest.fn().mockImplementation(function saveMock() {
         this._id = 'uploadId123'; // Assign _id to the instance
         return Promise.resolve(this);
       });
@@ -66,12 +68,15 @@ describe('uploadService', () => {
         mockFile,
         mockBody.branch
       );
-      expect(result).toEqual({ uploadId: 'uploadId123', extractedData: { date: '2025-01-01' } });
+      expect(result).toEqual({
+        uploadId: 'uploadId123',
+        extractedData: { date: '2025-01-01' },
+      });
     });
 
     it('should process text upload successfully', async () => {
       const mockBodyWithText = { ...mockBody, text: 'some text data' };
-      Upload.prototype.save = jest.fn().mockImplementation(function () {
+      Upload.prototype.save = jest.fn().mockImplementation(function saveMock() {
         this._id = 'uploadId456'; // Assign _id to the instance
         return Promise.resolve(this);
       });
@@ -90,7 +95,10 @@ describe('uploadService', () => {
         mockBodyWithText.text,
         mockBody.branch
       );
-      expect(result).toEqual({ uploadId: 'uploadId456', extractedData: { date: '2025-01-02' } });
+      expect(result).toEqual({
+        uploadId: 'uploadId456',
+        extractedData: { date: '2025-01-02' },
+      });
     });
 
     it('should throw an error if neither image nor text is provided', async () => {
@@ -120,8 +128,14 @@ describe('uploadService', () => {
       const result = await uploadService.getUploads(query);
 
       expect(Upload.find).toHaveBeenCalledWith({ status: 'Pending' });
-      expect(Upload.find().populate).toHaveBeenCalledWith('user', 'username email');
-      expect(Upload.find().populate).toHaveBeenCalledWith('adminActionBy', 'username');
+      expect(Upload.find().populate).toHaveBeenCalledWith(
+        'user',
+        'username email'
+      );
+      expect(Upload.find().populate).toHaveBeenCalledWith(
+        'adminActionBy',
+        'username'
+      );
       expect(Upload.find().limit).toHaveBeenCalledWith(2);
       expect(Upload.find().skip).toHaveBeenCalledWith(0);
       expect(Upload.find().sort).toHaveBeenCalledWith({ createdAt: -1 });
@@ -130,7 +144,6 @@ describe('uploadService', () => {
         uploads: mockUploads,
         totalPages: 1,
         currentPage: 1,
-      
       });
     });
   });
@@ -206,7 +219,11 @@ describe('uploadService', () => {
 
       expect(Upload.findByIdAndUpdate).toHaveBeenCalledWith(
         mockUploadId,
-        { status: 'Approved', adminMessage: 'Looks good', adminActionBy: mockUser.id },
+        {
+          status: 'Approved',
+          adminMessage: 'Looks good',
+          adminActionBy: mockUser.id,
+        },
         { new: true }
       );
       expect(Audit.prototype.save).toHaveBeenCalledTimes(1);
@@ -230,7 +247,11 @@ describe('uploadService', () => {
 
   describe('getUploadImage', () => {
     it('should return upload record with image data', async () => {
-      const mockUploadRecord = { _id: 'uploadId123', imageData: 'base64data', mimetype: 'image/jpeg' };
+      const mockUploadRecord = {
+        _id: 'uploadId123',
+        imageData: 'base64data',
+        mimetype: 'image/jpeg',
+      };
       Upload.findById.mockResolvedValue(mockUploadRecord);
 
       const result = await uploadService.getUploadImage('uploadId123');
@@ -242,14 +263,18 @@ describe('uploadService', () => {
     it('should throw an error if image not found', async () => {
       Upload.findById.mockResolvedValue(null);
 
-      await expect(uploadService.getUploadImage('nonExistentId')).rejects.toThrow('Image not found.');
+      await expect(
+        uploadService.getUploadImage('nonExistentId')
+      ).rejects.toThrow('Image not found.');
     });
 
     it('should throw an error if upload record has no image data', async () => {
       const mockUploadRecord = { _id: 'uploadId123', imageData: null };
       Upload.findById.mockResolvedValue(mockUploadRecord);
 
-      await expect(uploadService.getUploadImage('uploadId123')).rejects.toThrow('Image not found.');
+      await expect(uploadService.getUploadImage('uploadId123')).rejects.toThrow(
+        'Image not found.'
+      );
     });
   });
 });
