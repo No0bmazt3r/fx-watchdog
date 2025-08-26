@@ -15,12 +15,12 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"const response = pm.response.json();\r",
-									"pm.collectionVariables.set(\"authToken\", response.token);\r",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"const response = pm.response.json();",
+									"pm.collectionVariables.set(\"authToken\", response.token);",
 									"pm.collectionVariables.set(\"isTemporaryPassword\", response.isTemporaryPassword);"
 								],
 								"type": "text/javascript"
@@ -288,7 +288,7 @@
 								"ocr"
 							]
 						},
-						"description": "Sends a base64 encoded image string to the local Python OCR service for processing. Replace `<base64_encoded_image_string>` with your actual base64 string."
+						"description": "Sends a base64 encoded image string to the local Python OCR service for processing. Replace <base64_encoded_image_string> with your actual base64 string."
 					},
 					"response": []
 				}
@@ -296,4 +296,3 @@
 		}
 	]
 }
-
