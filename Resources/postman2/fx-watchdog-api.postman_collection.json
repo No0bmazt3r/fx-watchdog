@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "a8a1b3a3-1b3c-4c3e-8b1a-9e8e1f1d0c2c",
-		"name": "FX Watchdog API - Refactored",
+		"name": "FX Watchdog API - added batch_rates",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -10,31 +10,7 @@
 			"item": [
 				{
 					"name": "Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"try {",
-									"    let jsonData = pm.response.json();",
-									"    if (jsonData && jsonData.token) {",
-									"        pm.collectionVariables.set('authToken', jsonData.token);",
-									"        pm.collectionVariables.set('userId', jsonData.user.id);",
-									"        pm.collectionVariables.set('username', jsonData.user.username);",
-									"        pm.collectionVariables.set('userRole', jsonData.user.role);",
-									"    }",
-									"} catch (e) {",
-									"    console.error('Error parsing login response:', e);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
 						"method": "POST",
 						"header": [
 							{
@@ -44,12 +20,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"SuperAdmin\",\n  \"password\": \"Password123\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"username\": \"SuperAdmin\",\n  \"password\": \"Password123\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/login",
@@ -64,7 +35,32 @@
 						},
 						"description": "Logs in a user and returns a JWT."
 					},
-					"response": []
+					"response": [],
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"try {",
+									"    let jsonData = pm.response.json();",
+									"    console.log('Login response received:', jsonData);",
+									"    if (jsonData && jsonData.token) {",
+									"        pm.environment.set('authToken', jsonData.token);",
+									"        pm.environment.set('userId', jsonData.user.id);",
+									"        pm.environment.set('username', jsonData.user.username);",
+									"        pm.environment.set('userRole', jsonData.user.role);",
+									"        console.log('authToken environment variable updated successfully.');",
+									"    } else {",
+									"        console.error('Error: Token not found in login response.');",
+									"    }",
+									"} catch (e) {",
+									"    console.error('Error parsing login response:', e);",
+									"}"
+								]
+								}
+							}
+						]
 				},
 				{
 					"name": "Change Password",
@@ -74,16 +70,15 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"newPassword\": \"YourNewStrongPassword123!\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"newPassword\": \"YourNewStrongPassword123!\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/change-password",
@@ -100,26 +95,21 @@
 					},
 					"response": []
 				}
-			],
-			"auth": {
-				"type": "bearer",
-				"bearer": [
-					{
-						"key": "token",
-						"value": "{{authToken}}",
-						"type": "string"
-					}
-				]
-			}
+			]
 		},
 		{
 			"name": "2. User Management (Admin Only)",
 			"item": [
 				{
-					"name": "Get All Users",
+					"name": "1. Get All Users",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/users",
 							"host": [
@@ -135,23 +125,22 @@
 					"response": []
 				},
 				{
-					"name": "SuperAdmin - Create User",
+					"name": "2. SuperAdmin - Create User",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"new_admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"temporary_password\",\n  \"role\": \"Admin\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"username\": \"new_admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"temporary_password\",\n  \"role\": \"Admin\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -168,23 +157,22 @@
 					"response": []
 				},
 				{
-					"name": "Admin - Create Ops User",
+					"name": "3. Admin - Create Ops User",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"username\": \"opsuser1\",\n  \"email\": \"ops@example.com\",\n  \"password\": \"ops_temp_pass\",\n  \"role\": \"Ops User\",\n  \"branch\": \"Main Branch\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"username\": \"opsuser1\",\n  \"email\": \"ops@example.com\",\n  \"password\": \"ops_temp_pass\",\n  \"role\": \"Ops User\",\n  \"branch\": \"Main Branch\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -201,36 +189,56 @@
 					"response": []
 				},
 				{
-					"name": "Delete User",
+					"name": "4. SuperAdmin - Delete Admin",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/api/users/{{userId_to_delete}}",
+							"raw": "{{base_url}}/api/users/{{admin_user_id}}",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
 								"users",
-								"{{userId_to_delete}}"
+								"{{admin_user_id}}"
 							]
 						},
-						"description": "Deletes a user by ID. Set userId_to_delete collection variable with the actual user ID."
+						"description": "SuperAdmin deletes an Admin user. Set admin_user_id environment variable with the actual user ID."
+					},
+					"response": []
+				},
+				{
+					"name": "5. Admin - Delete Ops User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{ops_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{ops_user_id}}"
+							]
+						},
+						"description": "Admin deletes an Ops User. Set ops_user_id environment variable with the actual user ID."
 					},
 					"response": []
 				}
-			],
-			"auth": {
-				"type": "bearer",
-				"bearer": [
-					{
-						"key": "token",
-						"value": "{{authToken}}",
-						"type": "string"
-					}
-				]
-			}
+			]
 		},
 		{
 			"name": "3. Branch Management (Admin/SuperAdmin Only)",
@@ -243,16 +251,15 @@
 							{
 								"key": "Content-Type",
 								"value": "application/json"
+							},
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"Main Branch\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
+							"raw": "{\n  \"name\": \"Main Branch\"\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/branches",
@@ -272,7 +279,12 @@
 					"name": "Get All Branches",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/branches",
 							"host": [
@@ -291,7 +303,12 @@
 					"name": "Delete Branch",
 					"request": {
 						"method": "DELETE",
-						"header": [],
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
 						"url": {
 							"raw": "{{base_url}}/api/branches/:id",
 							"host": [
@@ -313,17 +330,7 @@
 					},
 					"response": []
 				}
-			],
-			"auth": {
-				"type": "bearer",
-				"bearer": [
-					{
-						"key": "token",
-						"value": "{{authToken}}",
-						"type": "string"
-					}
-				]
-			}
+			]
 		},
 		{
 			"name": "4. Rate Card Workflow",
@@ -333,28 +340,14 @@
 					"item": [
 						{
 							"name": "Step 1a: Upload Image for Extraction",
-							"event": [
-								{
-									"listen": "test",
-									"script": {
-										"exec": [
-											"try {",
-											"    let jsonData = pm.response.json();",
-											"    if (jsonData && jsonData.uploadId) {",
-											"        pm.collectionVariables.set('uploadId', jsonData.uploadId);",
-											"        pm.collectionVariables.set('extractedData', JSON.stringify(jsonData.extractedData, null, 2));",
-											"    }",
-											"} catch (e) {",
-											"    console.error('Error parsing upload response:', e);",
-											"}"
-										],
-										"type": "text/javascript"
-									}
-								}
-							],
 							"request": {
 								"method": "POST",
-								"header": [],
+								"header": [
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
+									}
+								],
 								"body": {
 									"mode": "formdata",
 									"formdata": [
@@ -371,109 +364,139 @@
 									]
 								},
 								"url": {
-								"raw": "{{base_url}}/api/uploads",
-								"host": [
-									"{{base_url}}"
-								],
-								"path": [
-									"api",
-									"uploads"
-								]
+									"raw": "{{base_url}}/api/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads"
+									]
+								},
+								"description": "Uploads an image and branch name. The API returns extracted data with a 'Pending' status."
 							},
-							"description": "Uploads an image and branch name. The API returns extracted data with a 'Pending' status."
-						},
-						"response": []
-					},
-					{
-						"name": "Step 1b: Upload Text for Extraction",
+						"response": [],
 						"event": [
 							{
 								"listen": "test",
 								"script": {
+									"type": "text/javascript",
 									"exec": [
 										"try {",
 										"    let jsonData = pm.response.json();",
 										"    if (jsonData && jsonData.uploadId) {",
-										"        pm.collectionVariables.set('uploadId', jsonData.uploadId);",
-										"        pm.collectionVariables.set('extractedData', JSON.stringify(jsonData.extractedData, null, 2));",
-										"    }",
-										"} catch (e) {",
-										"    console.error('Error parsing upload response:', e);",
-										"}"
-										],
-										"type": "text/javascript"
-									}
+										"        pm.environment.set('uploadId', jsonData.uploadId);",
+										"        console.log('Upload ID saved:', jsonData.uploadId);",
+									"    }",
+									"    if (jsonData && jsonData.tempFileId) {",
+									"        pm.environment.set('tempFileId', jsonData.tempFileId);",
+									"        console.log('Temp File ID saved:', jsonData.tempFileId);",
+									"    }",
+									"} catch (e) {",
+									"    console.error('Error parsing upload response:', e);",
+									"}"
+									]
 								}
-							],
+							}
+						]
+						},
+						{
+							"name": "Step 1b: Upload Text for Extraction",
 							"request": {
 								"method": "POST",
 								"header": [
 									{
 										"key": "Content-Type",
 										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
 									}
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{,\n  \"branch\": \"Main Branch\"\n}",
-								"options": {
-									"raw": {
-										"language": "json"
+									"raw": "{\n  \"text\": \"Today Rate\\nDate:04/08/2025\\n\\n Ria. রিয়ার মাধ্যমে \\nবৈধ ভাবে দেশে টাকা পাঠান \\n BANGLADESH \\n Bank Account \\n28.75+2.5%= 29.46TAKA\\n \\n Pin/Cash Pickup 28.30+2.50%=29.00\\n \\nBkash 28.40+ 2.50%=29.10\\n\\nNEPAL.          =32.55\\nPAKISTAN    =66.00\\nINDIA             =20.30\\nMYANMAR   =1030.00\\nINDONESIA  =3802.88\\nPHILIPPINE  =13.55\\nSRI LANKA   =\\nVETNAM.           =\\n*This rate is available only at MEDAN PASAR BRANCH\\n\\n*Charge Rm10,15,20\\n\\n যেকোনো মুহূর্তে রেট পরিবর্তন হতে পারে।\\n\\n\",\n  \"branch\": \"Main Branch\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/uploads",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads"
+									]
+								},
+								"description": "Uploads raw text for extraction. The API returns extracted data with a 'Pending' status."
+							},
+						"response": [],
+						"event": [
+							{
+								"listen": "test",
+								"script": {
+									"type": "text/javascript",
+									"exec": [
+										"try {",
+										"    let jsonData = pm.response.json();",
+										"    if (jsonData && jsonData.uploadId) {",
+										"        pm.environment.set('uploadId', jsonData.uploadId);",
+										"        console.log('Upload ID saved:', jsonData.uploadId);",
+									"    }",
+									"    if (jsonData && jsonData.tempFileId) {",
+									"        pm.environment.set('tempFileId', jsonData.tempFileId);",
+									"        console.log('Temp File ID saved:', jsonData.tempFileId);",
+									"    }",
+									"} catch (e) {",
+									"    console.error('Error parsing upload response:', e);",
+									"}"
+									]
+								}
+							}
+						]
+							},
+						{
+							"name": "Step 2: Submit Verified Data",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
 									}
-								}
-							},
-							"url": {
-								"raw": "{{base_url}}/api/uploads",
-								"host": [
-									"{{base_url}}"
 								],
-								"path": [
-									"api",
-									"uploads"
-								]
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"tempFileId\": \"{{tempFileId}}\",\n  \"uploadId\": \"{{uploadId}}\",\n  \"extractedData\": {\n    \"date\": \"2025-08-15\",\n    \"time\": \"10:00\",\n    \"branch\": \"Main Branch\",\n    \"rates\": {\n      \"USD\": 4.75,\n      \"EUR\": 5.10,\n      \"GBP\": 5.90\n    }\n  }\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/submit",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"submit"
+									]
+								},
+								"description": "Submits the verified data. The body can be the direct response from the upload endpoint. On success, the upload status is changed to 'Completed'."
 							},
-							"description": "Uploads raw text for extraction. The API returns extracted data with a 'Pending' status."
-						},
-						"response": []
-					},
-					{
-						"name": "Step 2: Submit Verified Data",
-						"request": {
-							"method": "POST",
-							"header": [
-								{
-									"key": "Content-Type",
-									"value": "application/json"
-								}
-							],
-							"body": {
-								"mode": "raw",
-								"raw": "{\n  \"uploadId\": \"{{uploadId}}\",\n  \"extractedData\": {{extractedData}}\n}",
-								"options": {
-									"raw": {
-										"language": "json"
-									}
-								}
-							},
-							"url": {
-								"raw": "{{base_url}}/api/submit",
-								"host": [
-									"{{base_url}}"
-								],
-								"path": [
-									"api",
-									"submit"
-								]
-							},
-							"description": "Submits the verified data. The body can be the direct response from the upload endpoint. On success, the upload status is changed to 'Completed'."
-						},
 						"response": []
 					},
 					{
 						"name": "Get Upload History",
 						"request": {
 							"method": "GET",
-							"header": [],
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
 							"url": {
 								"raw": "{{base_url}}/api/uploads/history?page=1&limit=10",
 								"host": [
@@ -503,7 +526,12 @@
 						"name": "Get Latest Upload",
 						"request": {
 							"method": "GET",
-							"header": [],
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
 							"url": {
 								"raw": "{{base_url}}/api/uploads/latest",
 								"host": [
@@ -523,7 +551,12 @@
 						"name": "Discard Last Upload",
 						"request": {
 							"method": "DELETE",
-							"header": [],
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
 							"url": {
 								"raw": "{{base_url}}/api/uploads/last",
 								"host": [
@@ -539,52 +572,59 @@
 						},
 						"response": []
 					}
-				],
-				"auth": {
-					"type": "inherit"
-				}
-			},
-			{
-				"name": "Admin Workflow",
-				"item": [
-					{
-						"name": "Get All Uploads",
-						"request": {
-							"method": "GET",
-							"header": [],
-							"url": {
-								"raw": "{{base_url}}/api/uploads?status=Pending&page=1&limit=10",
-								"host": [
-									"{{base_url}}"
-								],
-								"path": [
-									"api",
-									"uploads"
-								],
-								"query": [
+				]
+				},
+				{
+					"name": "Admin Workflow",
+					"item": [
+						{
+							"name": "Get All Uploads",
+							"request": {
+								"method": "GET",
+								"header": [
 									{
-										"key": "status",
-										"value": "Pending"
-									},
-									{
-										"key": "page",
-										"value": "1"
-									},
-									{
-										"key": "limit",
-										"value": "10"
+										"key": "x-auth-token",
+										"value": "{{authToken}}"
 									}
-								]
+								],
+								"url": {
+									"raw": "{{base_url}}/api/uploads?status=Pending&page=1&limit=10",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"uploads"
+									],
+									"query": [
+										{
+											"key": "status",
+											"value": "Pending"
+										},
+										{
+											"key": "page",
+											"value": "1"
+										},
+										{
+											"key": "limit",
+											"value": "10"
+										}
+									]
+								},
+								"description": "Retrieves a paginated list of all uploads. Can be filtered by status."
 							},
-							"description": "Retrieves a paginated list of all uploads. Can be filtered by status."
-						},
 						"response": []
 					},
 					{
 						"name": "Get Specific Upload",
 						"request": {
 							"method": "GET",
-							"header": [],
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
 							"url": {
 								"raw": "{{base_url}}/api/uploads/{{uploadId}}",
 								"host": [
@@ -596,7 +636,7 @@
 									"{{uploadId}}"
 								]
 							},
-							"description": "Retrieves a specific upload by its ID. Uses uploadId collection variable."
+							"description": "Retrieves a specific upload by its ID. Uses uploadId environment variable."
 						},
 						"response": []
 					},
@@ -608,16 +648,15 @@
 								{
 									"key": "Content-Type",
 									"value": "application/json"
+								},
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
 								}
 							],
 							"body": {
 								"mode": "raw",
-								"raw": "{\n  \"status\": \"Rejected\",\n  \"message\": \"Rates are incorrect.\"\n}",
-								"options": {
-									"raw": {
-										"language": "json"
-									}
-								}
+								"raw": "{\n  \"status\": \"Rejected\"\n}"
 							},
 							"url": {
 								"raw": "{{base_url}}/api/uploads/{{uploadId}}/status",
@@ -631,7 +670,7 @@
 									"status"
 								]
 							},
-							"description": "Updates the status of a specific upload. Allowed values: Pending, Completed, Approved, Rejected. Uses uploadId collection variable."
+							"description": "Updates the status of a specific upload. Allowed values: Pending, Completed, Rejected. Uses uploadId environment variable."
 						},
 						"response": []
 					},
@@ -639,7 +678,12 @@
 						"name": "Retrieve Uploaded Image",
 						"request": {
 							"method": "GET",
-							"header": [],
+							"header": [
+								{
+									"key": "x-auth-token",
+									"value": "{{authToken}}"
+								}
+							],
 							"url": {
 								"raw": "{{base_url}}/api/uploads/image/{{uploadId}}",
 								"host": [
@@ -652,117 +696,56 @@
 									"{{uploadId}}"
 								]
 							},
-							"description": "Retrieves a previously uploaded image by its upload ID. Uses uploadId collection variable."
+							"description": "Retrieves a previously uploaded image by its upload ID. Uses uploadId environment variable."
 						},
 						"response": []
 					}
-				],
-				"auth": {
-					"type": "inherit"
-				}
-			}
-		],
-		"auth": {
-			"type": "bearer",
-			"bearer": [
-				{
-					"key": "token",
-					"value": "{{authToken}}",
-					"type": "string"
+				]
 				}
 			]
-		}
 		},
 		{
-			"name": "5. Rate Analysis (Admin/SuperAdmin)",
+			"name": "5. Batch Rates",
 			"item": [
 				{
-					"name": "Get Lowest/Highest Rate Summary",
+					"name": "Get Batch Rates",
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-auth-token",
+								"value": "{{authToken}}"
+							}
+						],
 						"url": {
-							"raw": "{{base_url}}/api/rates?date=2025-08-21&batch=10AM",
+							"raw": "{{base_url}}/api/batch-rates?date=2025-08-15&batch=Morning",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"api",
-								"rates"
+								"batch-rates"
 							],
 							"query": [
 								{
 									"key": "date",
-									"value": "2025-08-21",
-									"description": "(Required) Date in YYYY-MM-DD format"
+									"value": "2025-08-15",
+									"description": "(Optional) Filter by date in YYYY-MM-DD format.",
+									"disabled": true
 								},
 								{
 									"key": "batch",
-									"value": "10AM",
-									"description": "(Optional) Can be '10AM' or '4PM'",
+									"value": "Morning",
+									"description": "(Optional) Filter by batch name: \"Morning\" or \"Afternoon\".",
 									"disabled": true
 								}
 							]
 						},
-						"description": "Retrieves a summary of the lowest and highest rates for a given date and optional batch."
+						"description": "Retrieves batch rates. Can be filtered by date (YYYY-MM-DD) and/or batch name (Morning, Afternoon). Requires Admin or SuperAdmin privileges."
 					},
 					"response": []
 				}
-			],
-			"auth": {
-				"type": "bearer",
-				"bearer": [
-					{
-						"key": "token",
-						"value": "{{authToken}}",
-						"type": "string"
-					}
-				]
-			}
-		}
-	],
-	"auth": {
-		"type": "bearer",
-		"bearer": [
-			{
-				"key": "token",
-				"value": "{{authToken}}",
-				"type": "string"
-			}
-		]
-	},
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:3000"
-		},
-		{
-			"key": "authToken",
-			"value": ""
-		},
-		{
-			"key": "userId",
-			"value": ""
-		},
-		{
-			"key": "username",
-			"value": ""
-		},
-		{
-			"key": "userRole",
-			"value": ""
-		},
-		{
-			"key": "uploadId",
-			"value": ""
-		},
-		{
-			"key": "extractedData",
-			"value": ""
-		},
-		{
-			"key": "userId_to_delete",
-			"value": ""
+			]
 		}
 	]
 }
