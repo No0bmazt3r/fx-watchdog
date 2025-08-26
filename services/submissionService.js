@@ -6,7 +6,7 @@ const logger = require('../utils/logger');
 
 const submitExtractedData = async (submissionData, user) => {
   const { uploadId, extractedData } = submissionData;
-  const { branch, rates, extraDetails } = extractedData; // These are AI extracted
+  const { date, time, branch, rates, extraDetails } = extractedData; // These are AI extracted
 
   const session = await mongoose.startSession();
   session.startTransaction();
